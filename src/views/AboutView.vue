@@ -8,38 +8,16 @@
       <v-hover>
         <v-subheader class="text-h6 baseLayer" @click="showBaseLayer=!showBaseLayer">Base Layer</v-subheader>
       </v-hover>
-      <v-radio-group v-model="currentBaseLayer" v-show="showBaseLayer">      
-        <v-radio
-          v-for="baseLayer in baseLayersTitle"
-          :key="baseLayer"
-          :label="baseLayer"
-          :value="baseLayer"
-        ></v-radio>
-      </v-radio-group>
+      <InputRadio :items="baseLayersTitle" model="currentBaseLayer" v-show="showBaseLayer"/>
+      <v-select
+        v-show="$store.state.map.currentBaseLayer === 'Bing Map'"
+        v-model="currentBingMap"
+        :items="BingMapstyles"
+        label="Bing Map"
+        single-line
+      ></v-select>
       </v-list>
-      <v-list v-show="currentBaseLayer === 'Bing Map'">
-        <v-list-item>
-          <v-select
-            v-model="currentBingMap"
-            :items="BingMapstyles"
-            label="Bing Map"
-            single-line
-          ></v-select>
-          </v-list-item>
-      </v-list>
-      <v-list>
-        <v-subheader class="text-h6">Base Layer Opacity</v-subheader>
-        <v-list-item v-show="showBaseLayer">
-            <v-slider
-              v-model="baseLayerOpacity"
-              step="0.1"
-              min="0"
-              max="1"
-              thumb-label
-              ticks
-            ></v-slider>
-          </v-list-item>
-      </v-list>
+      <LayerOpacity title="Base Layer Opacity" model="baseLayerOpacity" v-show="showBaseLayer"/>
     </v-navigation-drawer>
     <div id="map" class="map" ref="mapContainer"></div>
   </div>
@@ -55,8 +33,11 @@ import { OSM, XYZ, BingMaps, Stamen, TileDebug, TileArcGISRest } from 'ol/source
 import { defaults, FullScreen, OverviewMap, ScaleLine, ZoomSlider, ZoomToExtent, Attribution } from 'ol/control';
 import {register} from 'ol/proj/proj4';
 import { Stroke } from 'ol/style';
+import LayerOpacity from '@/components/LayerOpacity.vue'
+import InputRadio from '@/components/InputRadio.vue';
 
 export default {
+  components: { LayerOpacity, InputRadio },
   data() {
     return {
       mapContainer: null,
@@ -64,8 +45,6 @@ export default {
       showBaseLayer:false,
       baseLayers: [],
       baseLayersTitle: [],
-      currentBaseLayer: "OSM Standard",
-      baseLayerOpacity:1,
       BingMapstyles: [ 'RoadOnDemand', 'AerialWithLabelsOnDemand', 'CanvasDark' ],
       BingMaps: [],
       currentBingMap: 'RoadOnDemand'
@@ -143,37 +122,45 @@ export default {
     },
   },
   watch: {
-    currentBaseLayer () {
-      this.map.getLayers().getArray()[0].getLayers().getArray().forEach(layer => {
-        if (layer.get('title') === this.currentBaseLayer) {
-          if (layer.get('title') === 'Bing Map') {
-            this.BingMaps.forEach(style => {
-              style.setVisible(style.getSource().getImagerySet()==='RoadOnDemand')
-              style.setOpacity(1)
-            })
-          } else {
-            layer.setVisible(true)
-            layer.setOpacity(1)
-          }
-          this.baseLayerOpacity = 1
-        } else layer.setVisible(false)
-      })
-    },
-    baseLayerOpacity() {
-      this.map.getLayers().getArray()[0].getLayers().getArray().forEach(layer => {
-        if (layer.get('title') === this.currentBaseLayer) layer.setOpacity(this.baseLayerOpacity)
-      })
-    },
     currentBingMap() {
       this.BingMaps.forEach(style => {
         style.setVisible(style.getSource().getImagerySet()===this.currentBingMap)
         style.setOpacity(1)
-        this.baseLayerOpacity = 1
+        this.$store.state.map.baseLayerOpacity = 1
       })
-    }
+    },
   },
   mounted() {
     this.initMap()
+  },
+  created() {
+    this.$store.watch(
+      (state) => state.map.baseLayerOpacity,
+      (newValue, oldValue) => {
+        this.map.getLayers().getArray()[0].getLayers().getArray().forEach(layer => {
+          if (layer.get('title') === this.$store.state.map.currentBaseLayer) layer.setOpacity(newValue)
+        })
+      },
+    );
+    this.$store.watch(
+      (state) => state.map.currentBaseLayer,
+      (newValue, oldValue) => {
+        this.map.getLayers().getArray()[0].getLayers().getArray().forEach(layer => {
+          if (layer.get('title') === newValue) {
+            if (layer.get('title') === 'Bing Map') {
+              this.BingMaps.forEach(style => {
+                style.setVisible(style.getSource().getImagerySet()==='RoadOnDemand')
+                style.setOpacity(1)
+              })
+            } else {
+              layer.setVisible(true)
+              layer.setOpacity(1)
+            }
+            this.$store.state.map.baseLayerOpacity = 1
+          } else layer.setVisible(false)
+        })
+      },
+    );
   }
 }
 </script>

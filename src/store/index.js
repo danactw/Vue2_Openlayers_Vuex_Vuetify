@@ -6,7 +6,8 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     map: {
-
+      currentBaseLayer: "OSM Standard",
+      baseLayerOpacity: 1,
     }
   },
   getters: {
