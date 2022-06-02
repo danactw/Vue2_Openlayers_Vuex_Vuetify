@@ -31,7 +31,7 @@
           <v-subheader class="text-h6 optionalLayer" @click="showOptionalLayer=!showOptionalLayer">Optional Layer</v-subheader>
         </v-hover>
         <v-list-item-group v-show="showOptionalLayer">
-          <v-list-item @click="clearOptionalLayers">
+          <v-list-item @click="$store.state.map.selectedOptionalLayers = []">
             <v-list-item-icon>
               <v-icon v-text="'mdi-autorenew'"></v-icon>
             </v-list-item-icon>
@@ -47,6 +47,29 @@
             model="selectedOptionalLayers" 
             show="true" />
         </v-list-item-group>
+      </v-list>
+      <v-list>
+        <v-hover>
+          <v-subheader class="text-h6 mapControls" @click="showMapControls=!showMapControls">Map Controls</v-subheader>
+        </v-hover>
+          <v-list-item-group v-show="showMapControls">
+            <v-list-item @click="$store.state.map.selectedMapControls = mapControlsName">
+              <v-list-item-icon>
+                <v-icon v-text="'mdi-autorenew'"></v-icon>
+              </v-list-item-icon>
+              <v-list-item-content>
+                <v-list-item-title v-text="'Show All'"></v-list-item-title>
+              </v-list-item-content>
+            </v-list-item>
+            <InputCheckbox 
+              class="ml-4"
+              v-for="(item, index) in mapControlsName" 
+              :key="index" 
+              :item="item" 
+              model="selectedMapControls" 
+              show="true"
+            />
+          </v-list-item-group>
       </v-list>
     </v-navigation-drawer>
     <div id="map" class="map" ref="mapContainer"></div>
@@ -81,7 +104,10 @@ export default {
       currentBingMap: 'RoadOnDemand',
       showOptionalLayer: false,
       optionalLayers:[],
-      optionalLayersTitle: []
+      optionalLayersTitle: [],
+      showMapControls: false,
+      mapControls: [],
+      mapControlsName: []
     }
   },
   methods: {
@@ -182,6 +208,38 @@ export default {
         this.optionalLayersTitle.push(layer.get('title'))
       })
 
+      // Controls
+      const attribution = new Attribution({
+        collapsible: true
+      });
+      const fullScreen = new FullScreen({
+        tipLabel: "Full Screen"
+      });
+      const overviewMap = new OverviewMap({
+        collapsed: false,
+        layers: [
+          new TileLayer({
+            source: new OSM(),
+          })
+        ],
+        tipLabel: "Toggle Overview",
+        rotateWithView: true,
+      })
+      const scaleLine = new ScaleLine({
+        bar: true,
+        text: true,
+        steps: 2,
+        minWidth: 100
+      });
+      const zoomSlider = new ZoomSlider();
+      const zoomExtent = new ZoomToExtent();
+      this.mapControls = [attribution, fullScreen, overviewMap, scaleLine, zoomSlider, zoomExtent]
+
+      this.mapControls.forEach(control => {
+        this.mapControlsName.push(control.constructor.name)
+      })
+      this.$store.state.map.selectedMapControls = this.mapControlsName
+
       this.map = new Map({
         layers: [ baseLayerGroup, optionalLayerGroup ],
         target: 'map',
@@ -191,12 +249,6 @@ export default {
         }),
       })
     },
-    clearOptionalLayers () {
-      this.optionalLayers.forEach(layer => {
-        layer.setVisible(false)
-        this.$store.state.map.selectedOptionalLayers = []
-      })
-    }
   },
   watch: {
     currentBingMap() {
@@ -248,6 +300,15 @@ export default {
           } else layer.setVisible(false)
         })
       }
+    ),
+    this.$store.watch(
+      state => state.map.selectedMapControls,
+      (newValue, oldValue) => {
+        this.mapControls.forEach(control => {
+          if (newValue.includes(control.constructor.name)) this.map.addControl(control)
+          else this.map.removeControl(control)
+        })
+      }
     )
   }
 }
@@ -255,11 +316,13 @@ export default {
 
 <style>
 .map {
-  width: 100vw;
-  height: 100vh;
+  width: 80vw;
+  height: 90vh;
+  margin: auto;
 }
 .v-subheader.baseLayer,
-.v-subheader.optionalLayer{
+.v-subheader.optionalLayer,
+.v-subheader.mapControls{
   cursor: pointer;
 }
 </style>

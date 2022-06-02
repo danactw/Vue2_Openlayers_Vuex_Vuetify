@@ -9,6 +9,7 @@ export default new Vuex.Store({
       currentBaseLayer: "OSM Standard",
       baseLayerOpacity: 1,
       selectedOptionalLayers: [],
+      selectedMapControls: []
     }
   },
   getters: {
