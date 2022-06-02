@@ -5,28 +5,39 @@
         dense
         nav
       >
-      <v-hover>
-        <v-subheader class="text-h6 baseLayer" @click="showBaseLayer=!showBaseLayer">Base Layer</v-subheader>
-      </v-hover>
-      <InputRadio 
-        class="ml-2"
-        :items="baseLayersTitle" 
-        model="currentBaseLayer" 
-        v-show="showBaseLayer"
-      />
-      <v-select
-        v-show="$store.state.map.currentBaseLayer === 'Bing Map'"
-        v-model="currentBingMap"
-        :items="BingMapstyles"
-        label="Bing Map"
-        single-line
-      ></v-select>
+        <v-hover>
+          <v-subheader class="text-h6 projection" @click="showProjection=!showProjection">Projection</v-subheader>
+        </v-hover>
+        <InputRadio 
+          class="ml-2"
+          :items="projectionsTitle" 
+          model="currentProjection" 
+          v-show="showProjection"
+        />
+      </v-list>
+      <v-list>
+        <v-hover>
+          <v-subheader class="text-h6 baseLayer" @click="showBaseLayer=!showBaseLayer">Base Layer</v-subheader>
+        </v-hover>
+        <InputRadio 
+          class="ml-2"
+          :items="baseLayersTitle" 
+          model="currentBaseLayer" 
+          v-show="showBaseLayer"
+        />
+        <v-select
+          v-show="$store.state.map.currentBaseLayer === 'Bing Map'"
+          v-model="currentBingMap"
+          :items="BingMapstyles"
+          label="Bing Map"
+          single-line
+        ></v-select>
       </v-list>
       <v-list v-show="showBaseLayer">
         <v-subheader class="text-h6">Base Layer Opacity</v-subheader>
         <LayerOpacity model="baseLayerOpacity"/>
       </v-list>
-      <v-list>
+      <v-list v-show="$store.state.map.currentProjection==='EPSG:4326'">
         <v-hover>
           <v-subheader class="text-h6 optionalLayer" @click="showOptionalLayer=!showOptionalLayer">Optional Layer</v-subheader>
         </v-hover>
@@ -96,6 +107,9 @@ export default {
     return {
       mapContainer: null,
       map: null,
+      showProjection: false,
+      projections: [],
+      projectionsTitle: [],
       showBaseLayer:false,
       baseLayers: [],
       baseLayersTitle: [],
@@ -111,7 +125,40 @@ export default {
     }
   },
   methods: {
+    resetMapControls () {
+      this.mapControls.forEach(control => {
+        this.mapControlsName.push(control.constructor.name)
+      })
+      this.$store.state.map.selectedMapControls = this.mapControlsName.map(x=>x)
+    },
     initMap () {
+      // Projections
+      proj4.defs("EPSG:3825","+proj=tmerc +lat_0=0 +lon_0=119 +k=0.9999 +x_0=250000 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
+      proj4.defs("EPSG:3828","+proj=tmerc +lat_0=0 +lon_0=121 +k=0.9999 +x_0=250000 +y_0=0 +ellps=aust_SA +units=m +no_defs");
+      register(proj4)
+
+      const view4326 = new View({
+        center: [0,0],
+        zoom: 2,
+        projection: 'EPSG:4326',
+        title: 'world'
+      })
+      const view3825 = new View({
+        center: [449777.06920345523, 2627333.8306399807],
+        zoom: 8,
+        projection: 'EPSG:3825',
+        extent: [-2999133.104097694, 964675.7340995013, 3315454.588596386, 4723103.034050384]
+      })
+      const view3828 = new View({
+        center: [248543.19482292834, 2627444.4109558077],
+        zoom: 8,
+        projection: 'EPSG:3828',
+        extent: [-2204326.3713591076, 1600739.6787269707, 2284692.1803829246, 4323813.554926154]
+      })
+      this.projections = [view4326, view3825, view3828]
+      this.projections.forEach(projection => {
+        this.projectionsTitle.push(projection.getProjection().getCode())
+      })
       // Base Layers
       const OSMStandard = new TileLayer({
         source: new OSM(),
@@ -235,18 +282,10 @@ export default {
       const zoomExtent = new ZoomToExtent();
       this.mapControls = [attribution, fullScreen, overviewMap, scaleLine, zoomSlider, zoomExtent]
 
-      this.mapControls.forEach(control => {
-        this.mapControlsName.push(control.constructor.name)
-      })
-      this.$store.state.map.selectedMapControls = this.mapControlsName
-
       this.map = new Map({
         layers: [ baseLayerGroup, optionalLayerGroup ],
         target: 'map',
-        view: new View({
-          center: [0, 0],
-          zoom: 2,
-        }),
+        view: view4326,
       })
     },
   },
@@ -261,8 +300,26 @@ export default {
   },
   mounted() {
     this.initMap()
+    this.resetMapControls()
   },
   created() {
+    this.$store.watch(
+      state => state.map.currentProjection,
+      (newValue, oldValue) => {
+        this.projections.forEach(projection => {
+          const epsg = projection.getProjection().getCode()
+          if (newValue === epsg) {
+            this.map.setView(projection)
+            this.$store.state.map.selectedOptionalLayers = []
+            this.$store.state.map.baseLayerOpacity = 1
+            if (newValue !== "EPSG:4326") {
+              const index = this.$store.state.map.selectedMapControls.indexOf('OverviewMap')
+              if (index !== -1) this.$store.state.map.selectedMapControls.splice(index, 1)
+            } else this.$store.state.map.selectedMapControls = this.mapControlsName
+          }
+        })
+      },
+    );
     this.$store.watch(
       state => state.map.baseLayerOpacity,
       (newValue, oldValue) => {
@@ -316,13 +373,20 @@ export default {
 
 <style>
 .map {
-  width: 80vw;
-  height: 90vh;
+  width: calc(100vw - 256px);
+  height: calc(100vh - 55px);
   margin: auto;
 }
+
+.v-subheader.projection,
 .v-subheader.baseLayer,
 .v-subheader.optionalLayer,
 .v-subheader.mapControls{
   cursor: pointer;
 }
+
+.ol-overviewmap.ol-unselectable.ol-control {
+  bottom: 60px;
+}
+
 </style>

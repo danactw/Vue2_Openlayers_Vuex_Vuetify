@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <v-app-bar app clipped-left>
+    <v-app-bar app clipped-left height="55">
       <v-toolbar-title>Openlayers</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-btn v-for="(link, index) in routerLinks" :key="index" :to="{ name: link.path }" rounded plain> {{ link.title }} </v-btn>
