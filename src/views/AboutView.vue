@@ -1,19 +1,30 @@
 <template>
   <div>
     <v-navigation-drawer app clipped>
-      <v-list
-        dense
-        nav
-      >
+      <v-list>
         <v-hover>
           <v-subheader class="text-h6 projection" @click="showProjection=!showProjection">Projection</v-subheader>
         </v-hover>
+        <!-- <v-list-item-icon>
+          <v-icon v-text="'mdi-arrow-up-drop-circle'"></v-icon>
+          <v-icon v-text="'mdi-arrow-down-drop-circle'"></v-icon>
+        </v-list-item-icon> -->
         <InputRadio 
           class="ml-2"
           :items="projectionsTitle" 
           model="currentProjection" 
           v-show="showProjection"
         />
+      </v-list>
+      <v-list v-show="$store.state.map.currentProjection==='EPSG:4326'">
+        <v-subheader class="text-h6">Center</v-subheader>
+        <v-select
+          class="ml-4 mr-16"
+          v-model="currentCenter"
+          :items="centerOptions"
+          label="Bing Map"
+          single-line
+        ></v-select>
       </v-list>
       <v-list>
         <v-hover>
@@ -26,6 +37,7 @@
           v-show="showBaseLayer"
         />
         <v-select
+          class="ml-4 mr-16"
           v-show="$store.state.map.currentBaseLayer === 'Bing Map'"
           v-model="currentBingMap"
           :items="BingMapstyles"
@@ -110,6 +122,9 @@ export default {
       showProjection: false,
       projections: [],
       projectionsTitle: [],
+      projectionCenters: [],
+      centerOptions: [],
+      currentCenter: 'world',
       showBaseLayer:false,
       baseLayers: [],
       baseLayersTitle: [],
@@ -158,6 +173,34 @@ export default {
       this.projections = [view4326, view3825, view3828]
       this.projections.forEach(projection => {
         this.projectionsTitle.push(projection.getProjection().getCode())
+      })
+      //Center & Extent
+      const world = view4326
+      const EU = new View({
+        center: [13.485321538601092, 52.45287376584504],
+        zoom: 6,
+        projection: 'EPSG:4326',
+        extent: [-20.29271371580824, 26.54340080769108, 53.84996605236901, 74.19590677224758],
+        title: 'EU'
+      })
+      const US = new View({
+        center: [-100.92362186261362, 38.13459946835709],
+        zoom: 5,
+        projection: 'EPSG:4326',
+        extent: [-161.3272028668083, -8.82588222486288, -26.021063763766108, 77.91309264537576],
+        title: 'US'
+      })
+      const China = new View({
+        center: [106.5275015413533, 29.54261117376565],
+        zoom: 5,
+        projection: 'EPSG:4326',
+        extent: [61.78506214514829, 6.01902547010458, 142.69036471860034, 57.383376800420855],
+        title: 'China'
+      })
+      this.projectionCenters = [world, EU, US, China]
+
+      this.projectionCenters.forEach(center => {
+        this.centerOptions.push(center.get('title'))
       })
       // Base Layers
       const OSMStandard = new TileLayer({
@@ -297,12 +340,18 @@ export default {
         this.$store.state.map.baseLayerOpacity = 1
       })
     },
+    currentCenter() {
+      this.projectionCenters.forEach(center => {
+        if (this.currentCenter === center.get('title')) this.map.setView(center)
+      })
+    }
   },
   mounted() {
     this.initMap()
     this.resetMapControls()
   },
   created() {
+    //switch Projection
     this.$store.watch(
       state => state.map.currentProjection,
       (newValue, oldValue) => {
@@ -312,6 +361,7 @@ export default {
             this.map.setView(projection)
             this.$store.state.map.selectedOptionalLayers = []
             this.$store.state.map.baseLayerOpacity = 1
+            this.currentCenter = 'world'
             if (newValue !== "EPSG:4326") {
               const index = this.$store.state.map.selectedMapControls.indexOf('OverviewMap')
               if (index !== -1) this.$store.state.map.selectedMapControls.splice(index, 1)
@@ -320,6 +370,7 @@ export default {
         })
       },
     );
+    // change Base Layer Opacity
     this.$store.watch(
       state => state.map.baseLayerOpacity,
       (newValue, oldValue) => {
@@ -328,6 +379,7 @@ export default {
         })
       },
     );
+    // switch Base Layer
     this.$store.watch(
       state => state.map.currentBaseLayer,
       (newValue, oldValue) => {
@@ -347,6 +399,7 @@ export default {
         })
       },
     );
+    // toggle Optional Layers
     this.$store.watch(
       state => state.map.selectedOptionalLayers,
       (newValue, oldValue) => {
@@ -358,6 +411,7 @@ export default {
         })
       }
     ),
+    // select Map Controls to be displayed
     this.$store.watch(
       state => state.map.selectedMapControls,
       (newValue, oldValue) => {
@@ -389,4 +443,8 @@ export default {
   bottom: 60px;
 }
 
+/* .v-text-field{
+  margin
+  width: 100px;
+} */
 </style>
