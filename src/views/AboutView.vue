@@ -8,7 +8,12 @@
       <v-hover>
         <v-subheader class="text-h6 baseLayer" @click="showBaseLayer=!showBaseLayer">Base Layer</v-subheader>
       </v-hover>
-      <InputRadio :items="baseLayersTitle" model="currentBaseLayer" v-show="showBaseLayer"/>
+      <InputRadio 
+        class="ml-2"
+        :items="baseLayersTitle" 
+        model="currentBaseLayer" 
+        v-show="showBaseLayer"
+      />
       <v-select
         v-show="$store.state.map.currentBaseLayer === 'Bing Map'"
         v-model="currentBingMap"
@@ -17,7 +22,32 @@
         single-line
       ></v-select>
       </v-list>
-      <LayerOpacity title="Base Layer Opacity" model="baseLayerOpacity" v-show="showBaseLayer"/>
+      <v-list v-show="showBaseLayer">
+        <v-subheader class="text-h6">Base Layer Opacity</v-subheader>
+        <LayerOpacity model="baseLayerOpacity"/>
+      </v-list>
+      <v-list>
+        <v-hover>
+          <v-subheader class="text-h6 optionalLayer" @click="showOptionalLayer=!showOptionalLayer">Optional Layer</v-subheader>
+        </v-hover>
+        <v-list-item-group v-show="showOptionalLayer">
+          <v-list-item @click="clearOptionalLayers">
+            <v-list-item-icon>
+              <v-icon v-text="'mdi-autorenew'"></v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title v-text="'Clear All'"></v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <InputCheckbox 
+            class="ml-4"
+            v-for="(item, index) in optionalLayersTitle" 
+            :key="index" 
+            :item="item" 
+            model="selectedOptionalLayers" 
+            show="true" />
+        </v-list-item-group>
+      </v-list>
     </v-navigation-drawer>
     <div id="map" class="map" ref="mapContainer"></div>
   </div>
@@ -35,9 +65,10 @@ import {register} from 'ol/proj/proj4';
 import { Stroke } from 'ol/style';
 import LayerOpacity from '@/components/LayerOpacity.vue'
 import InputRadio from '@/components/InputRadio.vue';
+import InputCheckbox from '@/components/InputCheckbox.vue';
 
 export default {
-  components: { LayerOpacity, InputRadio },
+  components: { LayerOpacity, InputRadio, InputCheckbox },
   data() {
     return {
       mapContainer: null,
@@ -47,7 +78,10 @@ export default {
       baseLayersTitle: [],
       BingMapstyles: [ 'RoadOnDemand', 'AerialWithLabelsOnDemand', 'CanvasDark' ],
       BingMaps: [],
-      currentBingMap: 'RoadOnDemand'
+      currentBingMap: 'RoadOnDemand',
+      showOptionalLayer: false,
+      optionalLayers:[],
+      optionalLayersTitle: []
     }
   },
   methods: {
@@ -109,10 +143,47 @@ export default {
       this.baseLayers.forEach(layer => {
         if (!this.baseLayersTitle.includes(layer.get('title'))) this.baseLayersTitle.push(layer.get('title'))
       })
+      // Optional Layers
+      const tileDebug = new TileLayer({
+        source: new TileDebug(),
+        visible: false,
+        opacity: 0,
+        zIndex: 0,
+        title: "Tile Debug"
+      });
+      const tileArcGIS = new TileLayer({
+        source: new TileArcGISRest({
+          url: "https://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Population_World/MapServer"
+        }),
+        visible: false,
+        opacity: 0,
+        zIndex: 0,
+        title: "Tile ArcGIS"
+      });
+      const graticule = new Graticule({
+        // the style to use for the lines, optional.
+        strokeStyle: new Stroke({
+          color: 'rgba(255,120,0,0.9)',
+          width: 2,
+          lineDash: [0.5, 4],
+        }),
+        visible: true,
+        opacity: 0,
+        zIndex: 0,
+        showLabels: true,
+        wrapX: false,
+        title: 'Graticule'
+      })
+      this.optionalLayers = [ tileDebug, tileArcGIS, graticule ]
+      const optionalLayerGroup = new LayerGroup({
+          layers: this.optionalLayers
+      });
+      this.optionalLayers.forEach(layer => {
+        this.optionalLayersTitle.push(layer.get('title'))
+      })
+
       this.map = new Map({
-        layers: [
-          baseLayerGroup
-        ],
+        layers: [ baseLayerGroup, optionalLayerGroup ],
         target: 'map',
         view: new View({
           center: [0, 0],
@@ -120,6 +191,12 @@ export default {
         }),
       })
     },
+    clearOptionalLayers () {
+      this.optionalLayers.forEach(layer => {
+        layer.setVisible(false)
+        this.$store.state.map.selectedOptionalLayers = []
+      })
+    }
   },
   watch: {
     currentBingMap() {
@@ -135,7 +212,7 @@ export default {
   },
   created() {
     this.$store.watch(
-      (state) => state.map.baseLayerOpacity,
+      state => state.map.baseLayerOpacity,
       (newValue, oldValue) => {
         this.map.getLayers().getArray()[0].getLayers().getArray().forEach(layer => {
           if (layer.get('title') === this.$store.state.map.currentBaseLayer) layer.setOpacity(newValue)
@@ -143,7 +220,7 @@ export default {
       },
     );
     this.$store.watch(
-      (state) => state.map.currentBaseLayer,
+      state => state.map.currentBaseLayer,
       (newValue, oldValue) => {
         this.map.getLayers().getArray()[0].getLayers().getArray().forEach(layer => {
           if (layer.get('title') === newValue) {
@@ -161,6 +238,17 @@ export default {
         })
       },
     );
+    this.$store.watch(
+      state => state.map.selectedOptionalLayers,
+      (newValue, oldValue) => {
+        this.optionalLayers.forEach(layer => {
+          if (newValue.includes(layer.get('title'))) {
+            layer.setVisible(true)
+            layer.setOpacity(1)
+          } else layer.setVisible(false)
+        })
+      }
+    )
   }
 }
 </script>
@@ -170,7 +258,8 @@ export default {
   width: 100vw;
   height: 100vh;
 }
-.v-subheader.baseLayer{
+.v-subheader.baseLayer,
+.v-subheader.optionalLayer{
   cursor: pointer;
 }
 </style>
