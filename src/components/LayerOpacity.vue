@@ -20,11 +20,12 @@ export default {
 </script>
 
 <style>
-.v-slider.v-slider--horizontal{
-  margin-left: 0;
-  margin-right: 50px;
+/* for the thumb-label of the slider to display fully*/
+.v-slider.v-slider--horizontal.theme--light{
+  margin: 40px 0 0 0;
 }
-.v-application--is-ltr .v-list-item .v-list-item__icon:first-child{
-  margin-right: 10px;
+/* to eliminate the excessive padding for the v-slide*/
+#app.v-application--is-ltr .v-list-group--sub-group .v-list-group__items .v-list-item{
+  padding-left: 0px;
 }
 </style>

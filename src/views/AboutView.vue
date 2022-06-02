@@ -1,59 +1,64 @@
 <template>
   <div>
     <v-navigation-drawer app clipped>
-      <v-list>
-        <v-hover>
-          <v-subheader class="text-h6 projection" @click="showProjection=!showProjection">Projection</v-subheader>
-        </v-hover>
-        <!-- <v-list-item-icon>
-          <v-icon v-text="'mdi-arrow-up-drop-circle'"></v-icon>
-          <v-icon v-text="'mdi-arrow-down-drop-circle'"></v-icon>
-        </v-list-item-icon> -->
-        <InputRadio 
-          class="ml-2"
-          :items="projectionsTitle" 
-          model="currentProjection" 
-          v-show="showProjection"
-        />
-      </v-list>
-      <v-list v-show="$store.state.map.currentProjection==='EPSG:4326'">
-        <v-subheader class="text-h6">Center</v-subheader>
-        <v-select
-          class="ml-4 mr-16"
-          v-model="currentCenter"
-          :items="centerOptions"
-          label="Bing Map"
-          single-line
-        ></v-select>
-      </v-list>
-      <v-list>
-        <v-hover>
-          <v-subheader class="text-h6 baseLayer" @click="showBaseLayer=!showBaseLayer">Base Layer</v-subheader>
-        </v-hover>
-        <InputRadio 
-          class="ml-2"
-          :items="baseLayersTitle" 
-          model="currentBaseLayer" 
-          v-show="showBaseLayer"
-        />
-        <v-select
-          class="ml-4 mr-16"
-          v-show="$store.state.map.currentBaseLayer === 'Bing Map'"
-          v-model="currentBingMap"
-          :items="BingMapstyles"
-          label="Bing Map"
-          single-line
-        ></v-select>
-      </v-list>
-      <v-list v-show="showBaseLayer">
-        <v-subheader class="text-h6">Base Layer Opacity</v-subheader>
-        <LayerOpacity model="baseLayerOpacity"/>
-      </v-list>
-      <v-list v-show="$store.state.map.currentProjection==='EPSG:4326'">
-        <v-hover>
-          <v-subheader class="text-h6 optionalLayer" @click="showOptionalLayer=!showOptionalLayer">Optional Layer</v-subheader>
-        </v-hover>
-        <v-list-item-group v-show="showOptionalLayer">
+      <v-list>        
+        <v-list-group no-action sub-group>
+          <template v-slot:activator>
+            <v-list-item-title class="text-h6">Projection</v-list-item-title>
+          </template>
+          <v-list-item>
+            <v-radio-group v-model="$store.state.map.currentProjection" >      
+              <v-radio
+                v-for="item in projectionsTitle"
+                :key="item"
+                :label="item"
+                :value="item"
+              ></v-radio>
+            </v-radio-group>
+          </v-list-item>
+          <v-list-item v-show="$store.state.map.currentProjection==='EPSG:4326'">
+            <v-list-item-content>
+              <v-list-item-title class="text-subtitle-1">Center</v-list-item-title>
+              <v-select
+                class="mx-4 "
+                v-model="currentCenter"
+                :items="centerOptions"
+                single-line
+              ></v-select>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list-group>
+        <v-list-group no-action sub-group>
+          <template v-slot:activator>
+            <v-list-item-title class="text-h6">Base Layer</v-list-item-title>
+          </template>
+          <v-list-item>
+            <InputRadio 
+              class="ml-2"
+              :items="baseLayersTitle" 
+              model="currentBaseLayer" 
+            />
+          </v-list-item>
+          <v-list-item v-if="$store.state.map.currentBaseLayer === 'Bing Map'">
+            <v-select
+              class="mx-4"
+              v-model="currentBingMap"
+              :items="BingMapstyles"
+              label="Bing Map"
+              single-line
+            ></v-select>
+          </v-list-item>
+          <v-list-item>
+            <v-list-item-title class="block">Base Layer Opacity</v-list-item-title>
+          </v-list-item>
+          <v-list-item>
+            <LayerOpacity model="baseLayerOpacity"/>
+          </v-list-item>
+        </v-list-group>
+        <v-list-group no-action sub-group v-show="$store.state.map.currentProjection==='EPSG:4326'">
+          <template v-slot:activator>
+            <v-list-item-title class="text-h6">Optional Layer</v-list-item-title>
+          </template>
           <v-list-item @click="$store.state.map.selectedOptionalLayers = []">
             <v-list-item-icon>
               <v-icon v-text="'mdi-autorenew'"></v-icon>
@@ -62,37 +67,35 @@
               <v-list-item-title v-text="'Clear All'"></v-list-item-title>
             </v-list-item-content>
           </v-list-item>
-          <InputCheckbox 
-            class="ml-4"
-            v-for="(item, index) in optionalLayersTitle" 
-            :key="index" 
-            :item="item" 
-            model="selectedOptionalLayers" 
-            show="true" />
-        </v-list-item-group>
-      </v-list>
-      <v-list>
-        <v-hover>
-          <v-subheader class="text-h6 mapControls" @click="showMapControls=!showMapControls">Map Controls</v-subheader>
-        </v-hover>
-          <v-list-item-group v-show="showMapControls">
-            <v-list-item @click="$store.state.map.selectedMapControls = mapControlsName">
-              <v-list-item-icon>
-                <v-icon v-text="'mdi-autorenew'"></v-icon>
-              </v-list-item-icon>
-              <v-list-item-content>
-                <v-list-item-title v-text="'Show All'"></v-list-item-title>
-              </v-list-item-content>
-            </v-list-item>
             <InputCheckbox 
               class="ml-4"
-              v-for="(item, index) in mapControlsName" 
+              v-for="(item, index) in optionalLayersTitle" 
               :key="index" 
               :item="item" 
-              model="selectedMapControls" 
-              show="true"
-            />
-          </v-list-item-group>
+              model="selectedOptionalLayers" 
+              show="true" />
+        </v-list-group>
+        <v-list-group no-action sub-group>
+          <template v-slot:activator>
+            <v-list-item-title class="text-h6">Map Controls</v-list-item-title>
+          </template>
+          <v-list-item @click="$store.state.map.selectedMapControls = mapControlsName">
+            <v-list-item-icon>
+              <v-icon v-text="'mdi-autorenew'"></v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title v-text="'Show All'"></v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <InputCheckbox 
+            class="ml-4"
+            v-for="(item, index) in mapControlsName" 
+            :key="index" 
+            :item="item" 
+            model="selectedMapControls" 
+            show="true"
+          />
+        </v-list-group>
       </v-list>
     </v-navigation-drawer>
     <div id="map" class="map" ref="mapContainer"></div>
@@ -119,22 +122,18 @@ export default {
     return {
       mapContainer: null,
       map: null,
-      showProjection: false,
       projections: [],
       projectionsTitle: [],
       projectionCenters: [],
       centerOptions: [],
       currentCenter: 'world',
-      showBaseLayer:false,
       baseLayers: [],
       baseLayersTitle: [],
       BingMapstyles: [ 'RoadOnDemand', 'AerialWithLabelsOnDemand', 'CanvasDark' ],
       BingMaps: [],
       currentBingMap: 'RoadOnDemand',
-      showOptionalLayer: false,
       optionalLayers:[],
       optionalLayersTitle: [],
-      showMapControls: false,
       mapControls: [],
       mapControlsName: []
     }
@@ -431,20 +430,15 @@ export default {
   height: calc(100vh - 55px);
   margin: auto;
 }
-
-.v-subheader.projection,
-.v-subheader.baseLayer,
-.v-subheader.optionalLayer,
-.v-subheader.mapControls{
-  cursor: pointer;
-}
-
+/* to avoid the overviewMap overlay with the scaleLine*/
 .ol-overviewmap.ol-unselectable.ol-control {
   bottom: 60px;
 }
-
-/* .v-text-field{
-  margin
-  width: 100px;
-} */
+/* to eliminate the excessive padding for the v-list located in the sidebar*/
+#app.v-application--is-ltr .v-list-group--sub-group .v-list-group__header{
+  padding: 0;
+}
+#app.v-application--is-ltr .v-list-group--no-action.v-list-group--sub-group > .v-list-group__items > .v-list-item{
+  padding-left: 10px;
+}
 </style>
