@@ -14,7 +14,6 @@ export default {
   props: {
     item: String,
     model: String,
-    show: String
   }
 }
 </script>

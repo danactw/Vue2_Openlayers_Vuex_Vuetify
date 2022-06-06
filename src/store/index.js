@@ -10,7 +10,10 @@ export default new Vuex.Store({
       currentBaseLayer: "OSM Standard",
       baseLayerOpacity: 1,
       selectedOptionalLayers: [],
-      selectedMapControls: []
+      selectedMapControls: [],
+      selectedinteraction: 'Translate',
+      selectedDrawType: 'Point',
+      selectedAddtional: ''
     }
   },
   getters: {

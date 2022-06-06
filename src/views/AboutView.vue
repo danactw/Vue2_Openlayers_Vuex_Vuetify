@@ -66,7 +66,7 @@
               :key="index" 
               :item="item" 
               model="selectedOptionalLayers" 
-              show="true" />
+            />
         </v-list-group>
         <v-list-group no-action sub-group>
           <template v-slot:activator>
@@ -416,20 +416,4 @@ export default {
 </script>
 
 <style>
-.map {
-  width: calc(100vw - 256px);
-  height: calc(100vh - 55px);
-  margin: auto;
-}
-/* to avoid the overviewMap overlay with the scaleLine*/
-.ol-overviewmap.ol-unselectable.ol-control {
-  bottom: 60px;
-}
-/* to eliminate the excessive padding for the v-list located in the sidebar*/
-#app.v-application--is-ltr .v-list-group--sub-group .v-list-group__header{
-  padding: 0;
-}
-#app.v-application--is-ltr .v-list-group--no-action.v-list-group--sub-group > .v-list-group__items > .v-list-item{
-  padding-left: 10px;
-}
 </style>

@@ -1,5 +1,14 @@
 <template>
-  <hello-world />
+  <div>
+    <v-alert
+      elevation="2"
+      type="info"
+    >
+      web page under construction. Please go to 
+      <v-btn :to="{ name: 'About' }" plain>MainMap</v-btn>
+    </v-alert>
+    <hello-world />
+  </div>
 </template>
 
 <script>
