@@ -11,9 +11,9 @@ export default new Vuex.Store({
       baseLayerOpacity: 1,
       selectedOptionalLayers: [],
       selectedMapControls: [],
-      selectedinteraction: 'Translate',
-      selectedDrawType: 'Point',
-      selectedAddtional: ''
+      selectedinteraction: 'Draw',
+      selectedDrawType: 'LineString',
+      selectedAddtional: ['Measure']
     }
   },
   getters: {

@@ -61,11 +61,14 @@ export default {
       mapContainer: null,
       map: null,
       newFeature: null,
-      interactionsType: ['Draw', 'Translate', 'Modify', 'Scale and Rotate'],
+      // interactionsType: ['Draw', 'Modify', 'Translate', 'Scale and Rotate'],
+      interactionsType: ['Draw', 'Modify', 'Translate'],
       draw: null,
       translate: null,
       modify: null,
       snap: null,
+      startDrawingMsg: 'Click to start drawing',
+      hingMsg: '',
       drawType: ['Point', 'LineString', 'Circle', 'Regular Polygon', 'Rectangle', 'Polygon(freehand)'],
       RegularPolygonSize: 3,
       addtional: ['Measure', 'Measure Segment Length', 'Clear Previous Feature'],
@@ -173,7 +176,39 @@ export default {
           }),
         })
       },
+      hintStyle: new Style({
+        text: new Text({
+          font: '12px Calibri,sans-serif',
+          fill: new Fill({
+            color: 'rgba(255, 255, 255, 1)',
+          }),
+          backgroundFill: new Fill({
+            color: 'rgba(0, 0, 0, 0.4)',
+          }),
+          padding: [2, 2, 2, 2],
+          textAlign: 'left',
+          offsetX: 15,
+        }),
+      })
     };
+  },
+  computed: {
+    continueMsg() {
+      let action1, action2
+      if (this.$store.state.map.selectedDrawType === 'Polygon(freehand)') {
+        action1 = 'continue'
+        action2 = 'and double click to stop'
+      }
+      else if (this.$store.state.map.selectedDrawType === 'LineString') {
+        action1 = 'continue'
+        action2 = 'and double click to stop'
+      }
+      else {
+        action1 = 'stop'
+        action2 = ''
+      }
+      return `Click to ${action1} drawing ${this.$store.state.map.selectedDrawType} ${action2}`
+    }
   },
   methods: {
     initMap() {
@@ -219,16 +254,22 @@ export default {
         }),
       });
       this.map.addInteraction(select);
-      this.map.addInteraction(this.translate);
+      this.addDraw()
     },
     styleFunction(feature, showHint) {
       const geometry = feature.getGeometry();
       const type = geometry.getType();
       const style = [this.vectorStyle[type]]
       // let drawType, measureOutput, measureOutputCoord, segmentOutputCoord;
+      if ( showHint && type === 'Point' ) {
+        this.hintStyle.getText().setText(this.hingMsg);
+        style.push(this.hintStyle);
+      }
       return style
     },
     addDraw() {
+      const showHint = true
+      this.hingMsg = this.startDrawingMsg
       let type, geometryFunction
       switch (this.$store.state.map.selectedDrawType) {
         case 'Point':
@@ -255,18 +296,44 @@ export default {
       this.draw = new Draw({
         type: type,
         source: this.newFeature.getSource(),
-        style: feature => this.styleFunction(feature),
+        style: feature => this.styleFunction(feature, showHint),
         geometryFunction: geometryFunction
       })
-      // this.draw.on('drawstart', drawStart)
-      // this.draw.on('drawend', drawEnd)
+      this.draw.on('drawstart', this.drawStart)
+      this.draw.on('drawend', this.drawEnd)
       this.map.addInteraction(this.draw)
+    },
+    drawStart() {
+      this.hingMsg = this.continueMsg
+    },
+    drawEnd() {
+      this.hingMsg = this.startDrawingMsg
     },
     removeAllInteractions () {
       this.map.removeInteraction(this.draw)
       this.map.removeInteraction(this.translate)
       this.map.removeInteraction(this.modify)
       this.map.removeInteraction(this.snap)
+    },
+    formatLength(line) {
+      const length = getLength(line);
+      let output;
+      if (length > 100) {
+        output = `${Math.round((length / 1000) * 100) / 100} km`;
+      } else {
+        output = `${Math.round(length * 100) / 100} m`;
+      }
+      return output;
+    },
+    formatArea(polygon) {
+      const area = getArea(polygon);
+      let output;
+      if (area > 10000) {
+        output = `${Math.round((area / 1000000) * 100) / 100} km\xB2`;
+      } else {
+        output = `${Math.round(area * 100) / 100} m\xB2`;
+      }
+      return output;
     }
   },
   mounted() {
