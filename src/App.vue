@@ -17,10 +17,10 @@ export default {
   data() {
     return {
       routerLinks: [
-        { path: 'Home', title: 'Main Map'},
-        { path: 'About', title: 'Map'},
+        { path: 'Home', title: 'Home'},
+        { path: 'About', title: 'Main Map'},
         // { path: 'DrawMap', title: 'Draw Map'},
-        // { path: 'InteractionsMap', title: 'Interactions Map'},
+        { path: 'InteractionMap', title: 'Interaction Map'},
         // { path: 'SwipeMap', title: 'Swipe Map'},
         // { path: 'ClusterMap', title: 'Cluster Map'},
         // { path: 'VectorMap', title: 'Vector Map'},
