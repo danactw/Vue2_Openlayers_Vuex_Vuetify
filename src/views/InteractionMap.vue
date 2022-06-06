@@ -478,7 +478,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .v-slider.v-slider--horizontal.theme--light{
   margin: 40px 0 0 0;
 }
