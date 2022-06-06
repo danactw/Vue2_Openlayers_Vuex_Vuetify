@@ -7,14 +7,7 @@
             <v-list-item-title class="text-h6">Projection</v-list-item-title>
           </template>
           <v-list-item>
-            <v-radio-group v-model="$store.state.map.currentProjection" >      
-              <v-radio
-                v-for="item in projectionsTitle"
-                :key="item"
-                :label="item"
-                :value="item"
-              ></v-radio>
-            </v-radio-group>
+            <InputRadio :items="projectionsTitle" model="currentProjection" />
           </v-list-item>
           <v-list-item v-show="$store.state.map.currentProjection==='EPSG:4326'">
             <v-list-item-content>
@@ -361,8 +354,8 @@ export default {
             this.map.setView(projection)
             this.$store.state.map.selectedOptionalLayers = []
             this.$store.state.map.baseLayerOpacity = 1
-            this.currentCenter = 'world'
             this.$store.state.map.selectedMapControls = ['Attribution', 'FullScreen', 'ScaleLine', 'ZoomSlider', 'ZoomToExtent']
+            if ( newValue === 'EPSG:4326') this.currentCenter = 'world'
           }
         })
       },
