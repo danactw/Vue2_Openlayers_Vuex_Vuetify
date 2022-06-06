@@ -2,7 +2,7 @@
   <div>
     <v-navigation-drawer app clipped>
       <v-list>
-        <v-list-group no-action sub-group>
+        <v-list-group no-action sub-group value="true">
           <template v-slot:activator>
             <v-list-item-title class="text-h6">Interactions</v-list-item-title>
           </template>
@@ -33,6 +33,8 @@
             :item="item"
             model="selectedAddtional"
           />
+          <v-btn class="ml-4 mt-4" @click="undo">Undo</v-btn>
+          <v-btn class="ml-4 mt-4" @click="clearAll">Clear All</v-btn>
         </v-list-group>
       </v-list>
     </v-navigation-drawer>
@@ -212,7 +214,31 @@ export default {
             color: 'rgba(0, 0, 0, 0.7)',
           }),
         }),
-      })
+      }),
+      segmentStyle: new Style({
+        text: new Text({
+          font: '12px Calibri,sans-serif',
+          fill: new Fill({
+            color: 'rgba(255, 255, 255, 1)',
+          }),
+          backgroundFill: new Fill({
+            color: 'rgba(0, 0, 0, 0.4)',
+          }),
+          padding: [2, 2, 2, 2],
+          textBaseline: 'bottom',
+          offsetY: -12,
+        }),
+        image: new RegularShape({
+          radius: 6,
+          points: 3,
+          angle: Math.PI,
+          displacement: [0, 8],
+          fill: new Fill({
+            color: 'rgba(0, 0, 0, 0.4)',
+          }),
+        }),
+      }),
+      segmentStyles: []
     };
   },
   computed: {
@@ -272,8 +298,8 @@ export default {
         ],
         target: "map",
         view: new View({
-          center: [0, 0],
-          zoom: 2,
+          center: [-11292106.545934848, 4861222.107992905],
+          zoom: 4,
         }),
       });
       this.map.addInteraction(select);
@@ -282,6 +308,7 @@ export default {
     styleFunction(feature, showHint) {
       const geometry = feature.getGeometry();
       const type = geometry.getType();
+      console.log(type);
       const style = [this.vectorStyle[type]]
       let drawType, measureOutput, measureOutputCoord, segmentOutputCoord
       switch (this.$store.state.map.selectedDrawType) {
@@ -312,6 +339,7 @@ export default {
         this.outputStyle.getText().setText(measureOutput);
         if (this.$store.state.map.selectedDrawType !== 'Point') style.push(this.outputStyle)
       }
+      if ( segmentOutputCoord && this.$store.state.map.selectedAddtional.includes('Measure Segment Length') ) this.showSegment(segmentOutputCoord, style)
       if ( showHint && type === 'Point' ) {
         this.hintStyle.getText().setText(this.hingMsg);
         style.push(this.hintStyle);
@@ -356,6 +384,7 @@ export default {
     },
     drawStart() {
       this.hingMsg = this.continueMsg
+      if (this.$store.state.map.selectedAddtional.includes('Clear Previous Feature')) this.newFeature.getSource().clear()
     },
     drawEnd() {
       this.hingMsg = this.startDrawingMsg
@@ -385,6 +414,28 @@ export default {
         output = `${Math.round(area * 100) / 100} m\xB2`;
       }
       return output;
+    },
+    undo() {
+      const feature = this.newFeature.getSource().getFeatures().pop()
+      this.newFeature.getSource().removeFeature(feature)
+    },
+    clearAll() {
+      this.newFeature.getSource().clear()
+    },
+    showSegment (segmentOutputCoord, style) {
+      let count = 0
+      segmentOutputCoord.forEachSegment(function (a, b) {
+        const segment = new LineString([a, b]);
+        const label = this.formatLength(segment);
+        if (this.segmentStyles.length - 1 < count) {
+          this.segmentStyles.push(this.segmentStyle.clone());
+        }
+        const segmentPoint = new Point(segment.getCoordinateAt(0.5));
+        this.segmentStyles[count].setGeometry(segmentPoint);
+        this.segmentStyles[count].getText().setText(label);
+        style.push(this.segmentStyles[count]);
+        count++;
+      });
     }
   },
   mounted() {
@@ -439,5 +490,9 @@ button, input, select, textarea {
   height: 40px;
   font-size: 20px;
   text-align: center;
+}
+
+button {
+  width: max-content;
 }
 </style>
