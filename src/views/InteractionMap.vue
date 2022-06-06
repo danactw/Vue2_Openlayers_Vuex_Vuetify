@@ -189,6 +189,29 @@ export default {
           textAlign: 'left',
           offsetX: 15,
         }),
+      }),
+      outputStyle: new Style({
+        text: new Text({
+          font: '14px Calibri,sans-serif',
+          fill: new Fill({
+            color: 'rgba(255, 255, 255, 1)',
+          }),
+          backgroundFill: new Fill({
+            color: 'rgba(0, 0, 0, 0.7)',
+          }),
+          padding: [3, 3, 3, 3],
+          textBaseline: 'bottom',
+          offsetY: -15,
+        }),
+        image: new RegularShape({
+          radius: 8,
+          points: 3,
+          angle: Math.PI,
+          displacement: [0, 10],
+          fill: new Fill({
+            color: 'rgba(0, 0, 0, 0.7)',
+          }),
+        }),
       })
     };
   },
@@ -260,7 +283,35 @@ export default {
       const geometry = feature.getGeometry();
       const type = geometry.getType();
       const style = [this.vectorStyle[type]]
-      // let drawType, measureOutput, measureOutputCoord, segmentOutputCoord;
+      let drawType, measureOutput, measureOutputCoord, segmentOutputCoord
+      switch (this.$store.state.map.selectedDrawType) {
+        case 'Point':
+          drawType = 'Point'
+          break;
+        case 'LineString':
+          drawType = 'LineString'
+          break;
+        case 'Circle':
+          drawType = 'Circle'
+          break;
+        default:
+          drawType = 'Polygon'
+          break;
+      }
+      if ( type === drawType && this.$store.state.map.selectedAddtional.includes('Measure')) {
+        if (drawType === 'LineString') {
+          measureOutput = this.formatLength(geometry)
+          measureOutputCoord = new Point(geometry.getLastCoordinate())
+          segmentOutputCoord = geometry
+        } else if (drawType === 'Polygon') {
+          measureOutput = this.formatArea(geometry)
+          measureOutputCoord = geometry.getInteriorPoint()
+          segmentOutputCoord = new LineString(geometry.getCoordinates()[0])
+        }
+        this.outputStyle.setGeometry(measureOutputCoord);
+        this.outputStyle.getText().setText(measureOutput);
+        if (this.$store.state.map.selectedDrawType !== 'Point') style.push(this.outputStyle)
+      }
       if ( showHint && type === 'Point' ) {
         this.hintStyle.getText().setText(this.hingMsg);
         style.push(this.hintStyle);
@@ -323,7 +374,7 @@ export default {
       } else {
         output = `${Math.round(length * 100) / 100} m`;
       }
-      return output;
+      return output
     },
     formatArea(polygon) {
       const area = getArea(polygon);
