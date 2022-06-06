@@ -343,6 +343,7 @@ export default {
       this.projectionCenters.forEach(center => {
         if (this.currentCenter === center.get('title')) this.map.setView(center)
       })
+      this.$store.state.map.selectedMapControls = ['Attribution', 'FullScreen', 'ScaleLine', 'ZoomSlider', 'ZoomToExtent']
     }
   },
   mounted() {
@@ -361,10 +362,7 @@ export default {
             this.$store.state.map.selectedOptionalLayers = []
             this.$store.state.map.baseLayerOpacity = 1
             this.currentCenter = 'world'
-            if (newValue !== "EPSG:4326") {
-              const index = this.$store.state.map.selectedMapControls.indexOf('OverviewMap')
-              if (index !== -1) this.$store.state.map.selectedMapControls.splice(index, 1)
-            } else this.$store.state.map.selectedMapControls = this.mapControlsName
+            this.$store.state.map.selectedMapControls = ['Attribution', 'FullScreen', 'ScaleLine', 'ZoomSlider', 'ZoomToExtent']
           }
         })
       },
