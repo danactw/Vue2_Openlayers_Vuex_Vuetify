@@ -24,6 +24,7 @@
       </v-list>
     </v-navigation-drawer>
     <div id="map" class="map" ref="mapContainer"></div>
+    <v-card ref="overlayContainer" color="#fa0" class="pa-2">{{ baseMapOverlayMsg }}</v-card>
   </div>
 </template>
 
@@ -71,7 +72,9 @@ export default {
       }),
       ecoRegionInfo: {},
       ecoRegionhighlight: null,
-      ecoRegionsOverlay: null
+      ecoRegionsOverlay: null,
+      baseMapOverlay: null,
+      baseMapOverlayMsg: ''
     };
   },
   methods: {
@@ -141,6 +144,7 @@ export default {
           zoom: 2,
         }),
       });
+      // this.map.on('click', () => console.log(this.$refs.overlayContainer.$el))
     },
     selectedEcoRegionsStyle(feature) {
       const color = feature.get("COLOR") || "#eeeeee";
@@ -159,10 +163,30 @@ export default {
           this.ecoRegionsOverlay.getSource().addFeature(feature);
         this.ecoRegionhighlight = feature;
       }
+    },
+    showBaseMapOverlay (e) {
+      const feature = this.map.getFeaturesAtPixel(e.pixel)[0];
+      const currentCoord = e.coordinate;
+      this.baseMapOverlay.setPosition(currentCoord);
+      if (feature) {
+        this.baseMapOverlayMsg = feature.getProperties().layer;
+      }
+    },
+    clearAll() {
+      // this.map.removeLayer(selectionLayer);
+      // selectedCountry.value = {};
+      // selectionLayer.changed();
+      this.map.removeOverlay(this.baseMapOverlay);
+      this.map.removeLayer(this.ecoRegionsOverlay);
     }
   },
   mounted() {
-    this.initMap();
+    this.initMap()
+    this.baseMapOverlay = new Overlay({
+        element: this.$refs.overlayContainer.$el,
+        positioning: "center-left",
+        offset: [15, 0]
+    })
   },
   components: { InputRadio },
   created() {
@@ -170,10 +194,13 @@ export default {
       state => state.map.selectedVectorLayer,
       (newValue,oldValue) => {
         this.vectorLayers.forEach(layer => layer.setVisible(layer.get('title') === newValue))
+        this.clearAll()
         switch(newValue) {
           case 'Countries':
             break;
           case 'Base Map':
+            this.map.addOverlay(this.baseMapOverlay)
+            this.map.on('pointermove', e => this.showBaseMapOverlay(e))
             break;
           case 'Eco-Regions':
             this.map.addLayer(this.ecoRegionsOverlay)
@@ -192,4 +219,9 @@ export default {
 </script>
 
 <style>
+.overlayContainer {
+  background-color: rgb(255, 230, 179);
+  border-radius: 10px;
+  padding: 5px;
+}
 </style>
