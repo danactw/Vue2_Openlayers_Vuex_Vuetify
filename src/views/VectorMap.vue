@@ -24,7 +24,11 @@
       </v-list>
     </v-navigation-drawer>
     <div id="map" class="map" ref="mapContainer"></div>
-    <v-card ref="overlayContainer" color="#fa0" class="pa-2">{{ baseMapOverlayMsg }}</v-card>
+    <v-card ref="BMOverlay" color="#fa0" class="pa-2">{{ baseMapOverlayMsg }}</v-card>
+    <v-card ref="clusterOverlay" color="#fa0" class="pa-2" >
+      <span> {{ currentCoordinate.Long }} </span><br/>
+      <span> {{ currentCoordinate.Lat }} </span>
+    </v-card>
   </div>
 </template>
 
@@ -52,15 +56,6 @@ export default {
       map: null,
       vectorLayers: [],
       vectorLayersTitle: [],
-      countriesStyle: new Style({
-        stroke: new Stroke({
-          color: "gray",
-          width: 1,
-        }),
-        fill: new Fill({
-          color: "rgba(20,20,20,0.5)",
-        }),
-      }),
       ecoRegionsStyle: new Style({
         fill: new Fill({
           color: "rgba(102, 204, 255, 0.2)"
@@ -74,24 +69,37 @@ export default {
       ecoRegionhighlight: null,
       ecoRegionsOverlay: null,
       baseMapOverlay: null,
-      baseMapOverlayMsg: ''
+      baseMapOverlayMsg: '',
+      clusters: null,
+      features: null,
+      minDistance: 20,
+      distance: 70,
+      count: 2000,
+      currentCoordinate: {},
+      clusterOverlay: null
     };
   },
   methods: {
     initMap() {
-      const countries = new VectorTileLayer({
-        declutter: true,
-        source: new VectorTileSource({
-          maxZoom: 15,
-          format: new MVT({
-            idProperty: "iso_a3",
-          }),
-          url: "https://ahocevar.com/geoserver/gwc/service/tms/1.0.0/" +
-            "ne:ne_10m_admin_0_countries@EPSG:900913@pbf/{z}/{x}/{-y}.pbf",
+      this.features = new Array(this.count)
+      const X = 18000000
+      const Y = 8000000
+      for (let i = 0; i < this.count; ++i) {
+        const coordinates = [2 * X * Math.random() - X, 2 * Y * Math.random() - Y];
+        this.features[i] = new Feature(new Point(coordinates));
+      }
+      const clusterSource = new Cluster({
+        distance: parseInt(this.distance, 10),
+        minDistance: parseInt(this.minDistance, 10),
+        source: new VectorSource({
+          features: this.features,
         }),
-        style: this.countriesStyle,
-        visible: true,
-        title: "Countries"
+      });
+      this.clusters = new VectorLayer({
+        title: 'Cluster',
+        source: clusterSource,
+        style: feature => this.clusterStyle(feature),
+        visible: true
       });
       const vectorBaseMap = new VectorTileLayer({
         source: new VectorTileSource({
@@ -124,7 +132,7 @@ export default {
           })
         }),
       })
-      this.vectorLayers = [countries, vectorBaseMap, ecoRegions];
+      this.vectorLayers = [this.clusters, vectorBaseMap, ecoRegions];
       this.vectorLayers.forEach(layer => {
         this.vectorLayersTitle.push(layer.get("title"));
       });
@@ -144,12 +152,39 @@ export default {
           zoom: 2,
         }),
       });
-      // this.map.on('click', () => console.log(this.$refs.overlayContainer.$el))
     },
     selectedEcoRegionsStyle(feature) {
       const color = feature.get("COLOR") || "#eeeeee";
       this.ecoRegionsStyle.getFill().setColor(color);
       return this.ecoRegionsStyle;
+    },
+    clusterStyle(feature) {
+      const size = feature.get('features').length;
+      const radius = size < 20 ? 10 : size/2
+      const opacity = (size/20).toFixed(1)
+      const styleCache = {}
+      let style = styleCache[size];
+      if (!style) {
+          style = new Style({
+            image: new CircleStyle({
+              radius: radius,
+              stroke: new Stroke({
+                color: '#fff',
+              }),
+              fill: new Fill({
+                color: `rgb(255, 153, 51, ${opacity})`,
+              }),
+            }),
+            text: new Text({
+              text: size.toString(),
+              fill: new Fill({
+                color: '#fff',
+              }),
+            }),
+          });
+        styleCache[size] = style;
+      }
+      return style;
     },
     showEcoRegionInfo (e) {
       const feature = this.map.forEachFeatureAtPixel(e.pixel, feature => feature);
@@ -165,6 +200,7 @@ export default {
       }
     },
     showBaseMapOverlay (e) {
+      this.baseMapOverlay.setPosition(undefined);
       const feature = this.map.getFeaturesAtPixel(e.pixel)[0];
       const currentCoord = e.coordinate;
       this.baseMapOverlay.setPosition(currentCoord);
@@ -173,20 +209,49 @@ export default {
       }
     },
     clearAll() {
-      // this.map.removeLayer(selectionLayer);
-      // selectedCountry.value = {};
-      // selectionLayer.changed();
       this.map.removeOverlay(this.baseMapOverlay);
+      this.map.removeOverlay(this.clusterOverlay);
       this.map.removeLayer(this.ecoRegionsOverlay);
+    },
+    clusterZoomIn (e) {
+      this.clusterOverlay.setPosition(undefined) 
+      this.clusters.getFeatures(e.pixel).then(clickedFeatures => {
+        if (clickedFeatures.length) {
+          const features = clickedFeatures[0].get('features');
+          const extent = boundingExtent(
+            features.map((r) => r.getGeometry().getCoordinates())
+          );
+          if (features.length > 20) {
+            this.map.getView().fit(extent, {duration: 1000, padding: [50, 50, 50, 50], maxZoom: 4});
+          } else if (features.length > 10) {
+            this.map.getView().fit(extent, {duration: 1000, padding: [50, 50, 50, 50], maxZoom: 5});
+          } else if (features.length >= 2){
+            this.map.getView().fit(extent, {duration: 2000, padding: [50, 50, 50, 50]});
+          } else {
+            const coordinate = e.coordinate
+            const lonLat = toLonLat(coordinate).map(item=>item.toFixed(2))
+            // this.map.getView().centerOn(coordinate, this.map.getSize(), [570,300])
+            this.currentCoordinate = {Long: `Longitude: ${lonLat[0]}`, Lat: `Latitude: ${lonLat[1]}`}  
+            this.clusterOverlay.setPosition(coordinate) 
+          }
+        }
+      })
     }
   },
   mounted() {
     this.initMap()
     this.baseMapOverlay = new Overlay({
-        element: this.$refs.overlayContainer.$el,
+        element: this.$refs.BMOverlay.$el,
         positioning: "center-left",
         offset: [15, 0]
     })
+    this.clusterOverlay = new Overlay({
+        element: this.$refs.clusterOverlay.$el,
+        positioning: "center-left",
+        offset: [15, 0]
+    }),
+    this.map.addOverlay(this.clusterOverlay)
+    this.map.on('click', e => this.clusterZoomIn(e))
   },
   components: { InputRadio },
   created() {
@@ -195,8 +260,12 @@ export default {
       (newValue,oldValue) => {
         this.vectorLayers.forEach(layer => layer.setVisible(layer.get('title') === newValue))
         this.clearAll()
+        this.map.getView().setZoom(2)
+        this.map.getView().setCenter([0,0])
         switch(newValue) {
-          case 'Countries':
+          case 'Cluster':
+            this.map.addOverlay(this.clusterOverlay)
+            this.map.on('click', e => this.clusterZoomIn(e))
             break;
           case 'Base Map':
             this.map.addOverlay(this.baseMapOverlay)
@@ -214,12 +283,14 @@ export default {
     this.$set(this.ecoRegionInfo, 'BIOME_NAME', ''),
     this.$set(this.ecoRegionInfo, 'ECO_NAME', ''),
     this.$set(this.ecoRegionInfo, 'REALM', '')
+    this.$set(this.currentCoordinate, 'Long', '')
+    this.$set(this.currentCoordinate, 'Lat', '')
   }
 }
 </script>
 
 <style>
-.overlayContainer {
+.BMOverlay {
   background-color: rgb(255, 230, 179);
   border-radius: 10px;
   padding: 5px;

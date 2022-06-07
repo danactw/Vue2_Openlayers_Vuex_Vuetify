@@ -14,7 +14,7 @@ export default new Vuex.Store({
       selectedinteraction: 'Draw',
       selectedDrawType: 'LineString',
       selectedAddtional: ['Measure'],
-      selectedVectorLayer: 'Countries'
+      selectedVectorLayer: 'Cluster'
     }
   },
   getters: {
