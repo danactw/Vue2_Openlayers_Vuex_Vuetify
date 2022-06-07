@@ -10,6 +10,17 @@
             <InputRadio :items="vectorLayersTitle" model="selectedVectorLayer"/>
           </v-list-item>
         </v-list-group>
+        <v-card v-show="$store.state.map.selectedVectorLayer === 'Eco-Regions' ">
+          <v-card-title
+            class="text-h6"
+            v-text="'ecoRegionInfo'"
+          ></v-card-title>
+          <v-card-text>
+            <p><strong>BIOME_NAME:</strong><br/> {{ ecoRegionInfo.BIOME_NAME }}</p>
+            <p><strong>ECO_NAME:</strong><br/> {{ ecoRegionInfo.ECO_NAME }}</p>
+            <p><strong>REALM:</strong><br/> {{ ecoRegionInfo.REALM }}</p>
+          </v-card-text>
+        </v-card>
       </v-list>
     </v-navigation-drawer>
     <div id="map" class="map" ref="mapContainer"></div>
@@ -57,7 +68,10 @@ export default {
           color: "rgb(51, 153, 255)",
           width: 1
         })
-      })
+      }),
+      ecoRegionInfo: {},
+      ecoRegionhighlight: null,
+      ecoRegionsOverlay: null
     };
   },
   methods: {
@@ -94,6 +108,19 @@ export default {
         visible: false,
         title: "Eco-Regions"
       });
+      this.ecoRegionsOverlay = new VectorLayer({
+        source: new VectorSource(),
+        map: this.map,
+        style: new Style({
+          stroke: new Stroke({
+            color: "rgba(255, 255, 255, 1)",
+            width: 3,
+          }),
+          fill: new Fill({
+            color: "rgba(255, 255, 255, 0.3)"
+          })
+        }),
+      })
       this.vectorLayers = [countries, vectorBaseMap, ecoRegions];
       this.vectorLayers.forEach(layer => {
         this.vectorLayersTitle.push(layer.get("title"));
@@ -119,6 +146,19 @@ export default {
       const color = feature.get("COLOR") || "#eeeeee";
       this.ecoRegionsStyle.getFill().setColor(color);
       return this.ecoRegionsStyle;
+    },
+    showEcoRegionInfo (e) {
+      const feature = this.map.forEachFeatureAtPixel(e.pixel, feature => feature);
+      this.ecoRegionInfo["BIOME_NAME"] = feature ? feature.getProperties().BIOME_NAME : "";
+      this.ecoRegionInfo["ECO_NAME"] = feature ? feature.getProperties().ECO_NAME : "";
+      this.ecoRegionInfo["REALM"] = feature ? feature.getProperties().REALM : "";
+      if (feature !== this.ecoRegionhighlight) {
+        if (this.ecoRegionhighlight)
+          this.ecoRegionsOverlay.getSource().removeFeature(this.ecoRegionhighlight);
+        if (feature)
+          this.ecoRegionsOverlay.getSource().addFeature(feature);
+        this.ecoRegionhighlight = feature;
+      }
     }
   },
   mounted() {
@@ -127,13 +167,26 @@ export default {
   components: { InputRadio },
   created() {
     this.$store.watch(
-    state => state.map.selectedVectorLayer,
-    (newValue,oldValue) => {
-      this.vectorLayers.forEach(layer => {
-        layer.setVisible(layer.get('title') === newValue)
-      })
-    }
-  )
+      state => state.map.selectedVectorLayer,
+      (newValue,oldValue) => {
+        this.vectorLayers.forEach(layer => layer.setVisible(layer.get('title') === newValue))
+        switch(newValue) {
+          case 'Countries':
+            break;
+          case 'Base Map':
+            break;
+          case 'Eco-Regions':
+            this.map.addLayer(this.ecoRegionsOverlay)
+            this.map.on('click', e => this.showEcoRegionInfo(e))
+            break;
+          case '':
+            break;
+        }
+      }
+    ),
+    this.$set(this.ecoRegionInfo, 'BIOME_NAME', ''),
+    this.$set(this.ecoRegionInfo, 'ECO_NAME', ''),
+    this.$set(this.ecoRegionInfo, 'REALM', '')
   }
 }
 </script>
