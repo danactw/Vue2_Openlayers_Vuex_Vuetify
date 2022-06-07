@@ -66,6 +66,7 @@ export default {
       // interactionsType: ['Draw', 'Modify', 'Translate', 'Scale and Rotate'],
       interactionsType: ['Draw', 'Modify', 'Translate'],
       draw: null,
+      select: null,
       translate: null,
       modify: null,
       snap: null,
@@ -74,76 +75,76 @@ export default {
       drawType: ['Point', 'LineString', 'Circle', 'Regular Polygon', 'Rectangle', 'Polygon(freehand)'],
       RegularPolygonSize: 3,
       addtional: ['Measure', 'Measure Segment Length', 'Clear Previous Feature'],
-      geojsonObject: {
-        "type": "FeatureCollection",
-        "crs": {
-          "type": "name",
-          "properties": {
-            "name": "EPSG:3857",
-          },
-        },
-        "features": [
-          {
-            "type": "Feature",
-            "geometry": {
-              "type": "Polygon",
-              "coordinates": [
-                [
-                  [-5000000, 6000000],
-                  [-5000000, 8000000],
-                  [-3000000, 8000000],
-                  [-3000000, 6000000],
-                  [-5000000, 6000000],
-                ],
-              ],
-            },
-          },
-          {
-            "type": "Feature",
-            "geometry": {
-              "type": "Polygon",
-              "coordinates": [
-                [
-                  [-2000000, 6000000],
-                  [-2000000, 8000000],
-                  [0, 8000000],
-                  [0, 6000000],
-                  [-2000000, 6000000],
-                ],
-              ],
-            },
-          },
-          {
-            "type": "Feature",
-            "geometry": {
-              "type": "Polygon",
-              "coordinates": [
-                [
-                  [1000000, 6000000],
-                  [1000000, 8000000],
-                  [3000000, 8000000],
-                  [3000000, 6000000],
-                  [1000000, 6000000],
-                ],
-              ],
-            },
-          },
-          {
-            "type": "Feature",
-            "geometry": {
-              "type": "Polygon",
-              "coordinates": [
-                [
-                  [-2000000, -1000000],
-                  [-1000000, 1000000],
-                  [0, -1000000],
-                  [-2000000, -1000000],
-                ],
-              ],
-            },
-          },
-        ],
-      },
+      // geojsonObject: {
+      //   "type": "FeatureCollection",
+      //   "crs": {
+      //     "type": "name",
+      //     "properties": {
+      //       "name": "EPSG:3857",
+      //     },
+      //   },
+      //   "features": [
+      //     {
+      //       "type": "Feature",
+      //       "geometry": {
+      //         "type": "Polygon",
+      //         "coordinates": [
+      //           [
+      //             [-5000000, 6000000],
+      //             [-5000000, 8000000],
+      //             [-3000000, 8000000],
+      //             [-3000000, 6000000],
+      //             [-5000000, 6000000],
+      //           ],
+      //         ],
+      //       },
+      //     },
+      //     {
+      //       "type": "Feature",
+      //       "geometry": {
+      //         "type": "Polygon",
+      //         "coordinates": [
+      //           [
+      //             [-2000000, 6000000],
+      //             [-2000000, 8000000],
+      //             [0, 8000000],
+      //             [0, 6000000],
+      //             [-2000000, 6000000],
+      //           ],
+      //         ],
+      //       },
+      //     },
+      //     {
+      //       "type": "Feature",
+      //       "geometry": {
+      //         "type": "Polygon",
+      //         "coordinates": [
+      //           [
+      //             [1000000, 6000000],
+      //             [1000000, 8000000],
+      //             [3000000, 8000000],
+      //             [3000000, 6000000],
+      //             [1000000, 6000000],
+      //           ],
+      //         ],
+      //       },
+      //     },
+      //     {
+      //       "type": "Feature",
+      //       "geometry": {
+      //         "type": "Polygon",
+      //         "coordinates": [
+      //           [
+      //             [-2000000, -1000000],
+      //             [-1000000, 1000000],
+      //             [0, -1000000],
+      //             [-2000000, -1000000],
+      //           ],
+      //         ],
+      //       },
+      //     },
+      //   ],
+      // },
       vectorStyle: {
         'Point': new Style({
           image: new CircleStyle({
@@ -261,9 +262,6 @@ export default {
   },
   methods: {
     initMap() {
-      const source = new VectorSource({
-        features: new GeoJSON().readFeatures(this.geojsonObject),
-      });
       const USLayer = new VectorLayer({
         source: new VectorSource({
           url: "https://openlayers.org/data/vector/us-states.json",
@@ -272,17 +270,17 @@ export default {
         })
       });
       this.newFeature = new VectorLayer({
-        source: source,
+        source: new VectorSource(),
         style: feature => this.styleFunction(feature),
       });
-      const select = new Select({
+      this.select = new Select({
         wrapX: false,
       });
       this.translate = new Translate({
-        features: select.getFeatures(),
+        features: this.select.getFeatures(),
       });
       this.modify = new Modify({
-        features: select.getFeatures(),
+        features: this.select.getFeatures(),
       });
       this.snap = new Snap({
         source: this.newFeature.getSource(),
@@ -302,44 +300,42 @@ export default {
           zoom: 4,
         }),
       });
-      this.map.addInteraction(select);
       this.addDraw()
     },
     styleFunction(feature, showHint) {
       const geometry = feature.getGeometry();
       const type = geometry.getType();
-      // console.log(type);
       const style = [this.vectorStyle[type]]
-      // let drawType, measureOutput, measureOutputCoord, segmentOutputCoord
-      // switch (this.$store.state.map.selectedDrawType) {
-      //   case 'Point':
-      //     drawType = 'Point'
-      //     break;
-      //   case 'LineString':
-      //     drawType = 'LineString'
-      //     break;
-      //   case 'Circle':
-      //     drawType = 'Circle'
-      //     break;
-      //   default:
-      //     drawType = 'Polygon'
-      //     break;
-      // }
-      // if ( type === drawType && this.$store.state.map.selectedAddtional.includes('Measure')) {
-      //   if (drawType === 'LineString') {
-      //     measureOutput = this.formatLength(geometry)
-      //     measureOutputCoord = new Point(geometry.getLastCoordinate())
-      //     segmentOutputCoord = geometry
-      //   } else if (drawType === 'Polygon') {
-      //     measureOutput = this.formatArea(geometry)
-      //     measureOutputCoord = geometry.getInteriorPoint()
-      //     segmentOutputCoord = new LineString(geometry.getCoordinates()[0])
-      //   }
-      //   this.outputStyle.setGeometry(measureOutputCoord);
-      //   this.outputStyle.getText().setText(measureOutput);
-      //   if (this.$store.state.map.selectedDrawType !== 'Point') style.push(this.outputStyle)
-      // }
-      // if ( segmentOutputCoord && this.$store.state.map.selectedAddtional.includes('Measure Segment Length') ) this.showSegment(segmentOutputCoord, style)
+      let drawType, measureOutput, measureOutputCoord, segmentOutputCoord
+      switch (this.$store.state.map.selectedDrawType) {
+        case 'Point':
+          drawType = 'Point'
+          break;
+        case 'LineString':
+          drawType = 'LineString'
+          break;
+        case 'Circle':
+          drawType = 'Circle'
+          break;
+        default:
+          drawType = 'Polygon'
+          break;
+      }
+      if ( type === drawType && this.$store.state.map.selectedAddtional.includes('Measure')) {
+        if (drawType === 'LineString') {
+          measureOutput = this.formatLength(geometry)
+          measureOutputCoord = new Point(geometry.getLastCoordinate())
+          segmentOutputCoord = geometry
+        } else if (drawType === 'Polygon') {
+          measureOutput = this.formatArea(geometry)
+          measureOutputCoord = geometry.getInteriorPoint()
+          segmentOutputCoord = new LineString(geometry.getCoordinates()[0])
+        }
+        this.outputStyle.setGeometry(measureOutputCoord);
+        this.outputStyle.getText().setText(measureOutput);
+        if (this.$store.state.map.selectedDrawType !== 'Point') style.push(this.outputStyle)
+      }
+      if ( segmentOutputCoord && this.$store.state.map.selectedAddtional.includes('Measure Segment Length') ) this.showSegment(segmentOutputCoord, style)
       if ( showHint && type === 'Point' ) {
         this.hintStyle.getText().setText(this.hingMsg);
         style.push(this.hintStyle);
@@ -391,6 +387,7 @@ export default {
     },
     removeAllInteractions () {
       this.map.removeInteraction(this.draw)
+      this.map.removeInteraction(this.select)
       this.map.removeInteraction(this.translate)
       this.map.removeInteraction(this.modify)
       this.map.removeInteraction(this.snap)
@@ -424,7 +421,7 @@ export default {
     },
     showSegment (segmentOutputCoord, style) {
       let count = 0
-      segmentOutputCoord.forEachSegment(function (a, b) {
+      segmentOutputCoord.forEachSegment((a, b) => {
         const segment = new LineString([a, b]);
         const label = this.formatLength(segment);
         if (this.segmentStyles.length - 1 < count) {
@@ -451,9 +448,11 @@ export default {
             this.addDraw()
             break;
           case 'Translate':
+            this.map.addInteraction(this.select);
             this.map.addInteraction(this.translate);
             break;
           case 'Modify':
+            this.map.addInteraction(this.select);
             this.map.addInteraction(this.modify);
             this.map.addInteraction(this.snap);
             break;
