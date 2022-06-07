@@ -10,6 +10,12 @@
             <InputRadio :items="vectorLayersTitle" model="selectedVectorLayer"/>
           </v-list-item>
         </v-list-group>
+        <v-list-item v-show="$store.state.map.selectedVectorLayer === 'Countries' ">
+          <v-select
+            v-model="currentSelectType"
+            :items="selectType"
+          ></v-select>
+        </v-list-item>
         <v-card v-show="$store.state.map.selectedVectorLayer === 'Eco-Regions' ">
           <v-card-title
             class="text-h6"
@@ -56,6 +62,29 @@ export default {
       map: null,
       vectorLayers: [],
       vectorLayersTitle: [],
+      countriesLayer: null,
+      countriesStyle: new Style({
+          stroke: new Stroke({
+              color: "gray",
+              width: 1,
+          }),
+          fill: new Fill({
+              color: "rgba(20,20,20,0.5)",
+          }),
+      }),
+      selectType: ["Single Select", "Multi Select", "Single Select on hover"],
+      currentSelectType: 'Single Select',
+      selectedCountry: {},
+      selectionLayer: null,
+      selectedCountriesStyle: new Style({
+          stroke: new Stroke({
+              color: "rgba(200,20,20,0.8)",
+              width: 2,
+          }),
+          fill: new Fill({
+              color: "rgba(200,20,20,0.4)",
+          }),
+      }),
       ecoRegionsStyle: new Style({
         fill: new Fill({
           color: "rgba(102, 204, 255, 0.2)"
@@ -101,6 +130,29 @@ export default {
         style: feature => this.clusterStyle(feature),
         visible: true
       });
+      this.countriesLayer = new VectorTileLayer({
+          declutter: true,
+          source: new VectorTileSource({
+              maxZoom: 15,
+              format: new MVT({
+                  idProperty: "iso_a3",
+              }),
+              url: "https://ahocevar.com/geoserver/gwc/service/tms/1.0.0/" +
+                  "ne:ne_10m_admin_0_countries@EPSG:900913@pbf/{z}/{x}/{-y}.pbf",
+          }),
+          style: this.countriesStyle,
+          visible: false,
+          title: "Countries"
+      });
+      this.selectionLayer = new VectorTileLayer({
+        renderMode: "vector",
+        source: this.countriesLayer.getSource(),
+        style: feature => {
+          if (feature.getId() in this.selectedCountry) {
+            return this.selectedCountriesStyle;
+          }
+        },
+      });
       const vectorBaseMap = new VectorTileLayer({
         source: new VectorTileSource({
           format: new MVT(),
@@ -132,7 +184,7 @@ export default {
           })
         }),
       })
-      this.vectorLayers = [this.clusters, vectorBaseMap, ecoRegions];
+      this.vectorLayers = [this.clusters, this.countriesLayer, vectorBaseMap, ecoRegions];
       this.vectorLayers.forEach(layer => {
         this.vectorLayersTitle.push(layer.get("title"));
       });
@@ -209,6 +261,9 @@ export default {
       }
     },
     clearAll() {
+      this.map.removeLayer(this.selectionLayer);
+      this.selectedCountry = {};
+      this.selectionLayer.changed();
       this.map.removeOverlay(this.baseMapOverlay);
       this.map.removeOverlay(this.clusterOverlay);
       this.map.removeLayer(this.ecoRegionsOverlay);
@@ -236,6 +291,23 @@ export default {
           }
         }
       })
+    },
+    highlightCountry(e) {
+      this.countriesLayer.getFeatures(e.pixel).then(features => {
+        if (!features.length) {
+          this.selectedCountry = {};
+          this.selectionLayer.changed();
+          return;
+        }
+        const feature = features[0];
+        if (!feature) return;
+        if (this.currentSelectType !== "Multi Select") {
+          this.selectedCountry = {};
+        }
+        const featureId = feature.getId();
+        this.selectedCountry[featureId] = feature;
+        this.selectionLayer.changed();
+      });
     }
   },
   mounted() {
@@ -265,7 +337,17 @@ export default {
         switch(newValue) {
           case 'Cluster':
             this.map.addOverlay(this.clusterOverlay)
-            this.map.on('click', e => this.clusterZoomIn(e))
+            this.map.on('click', e => {
+              if (this.$store.state.map.selectedVectorLayer === 'Cluster') this.clusterZoomIn(e)
+            })
+            break;
+          case 'Countries':
+            this.map.addLayer(this.selectionLayer)
+            this.map.on(["click", "pointermove"], e => {
+              if (this.currentSelectType === "Single Select on hover" && e.type !== "pointermove" ||
+                this.currentSelectType !== "Single Select on hover" && e.type === "pointermove") return
+              this.highlightCountry(e);
+            })
             break;
           case 'Base Map':
             this.map.addOverlay(this.baseMapOverlay)
@@ -278,13 +360,19 @@ export default {
           case '':
             break;
         }
-      }
+      },
     ),
     this.$set(this.ecoRegionInfo, 'BIOME_NAME', ''),
     this.$set(this.ecoRegionInfo, 'ECO_NAME', ''),
     this.$set(this.ecoRegionInfo, 'REALM', '')
     this.$set(this.currentCoordinate, 'Long', '')
     this.$set(this.currentCoordinate, 'Lat', '')
+  },
+  watch: {
+    currentSelectType() {
+      this.selectedCountry = {};
+      this.selectionLayer.changed();
+    }
   }
 }
 </script>
