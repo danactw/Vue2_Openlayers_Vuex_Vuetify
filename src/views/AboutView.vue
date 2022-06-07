@@ -411,6 +411,9 @@ export default {
         })
       }
     )
+  },
+  beforeRouteEnter(to, from, next) {
+    next(vm => vm.$store.state.map.currentProjection='EPSG:4326')
   }
 }
 </script>

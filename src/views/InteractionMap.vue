@@ -58,6 +58,7 @@ import InputRadio from '@/components/InputRadio.vue';
 import InputCheckbox from '@/components/InputCheckbox.vue';
 
 export default {
+  components: { InputRadio, InputCheckbox },
   data() {
     return {
       mapContainer: null,
@@ -472,8 +473,10 @@ export default {
       this.map.removeInteraction(this.draw)
       this.addDraw()
     }
+  },  
+  beforeRouteEnter(to, from, next) {
+    next(vm => vm.$store.state.map.selectedinteraction='Draw')
   },
-  components: { InputRadio, InputCheckbox }
 }
 </script>
 

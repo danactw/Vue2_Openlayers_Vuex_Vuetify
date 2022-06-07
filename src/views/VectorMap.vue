@@ -372,7 +372,10 @@ export default {
     currentSelectType() {
       this.selectedCountry = {};
       this.selectionLayer.changed();
-    }
+    },
+  },
+  beforeRouteEnter(to, from, next) {
+    next(vm => vm.$store.state.map.selectedVectorLayer='Cluster')
   }
 }
 </script>
