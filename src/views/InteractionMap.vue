@@ -308,38 +308,38 @@ export default {
     styleFunction(feature, showHint) {
       const geometry = feature.getGeometry();
       const type = geometry.getType();
-      console.log(type);
+      // console.log(type);
       const style = [this.vectorStyle[type]]
-      let drawType, measureOutput, measureOutputCoord, segmentOutputCoord
-      switch (this.$store.state.map.selectedDrawType) {
-        case 'Point':
-          drawType = 'Point'
-          break;
-        case 'LineString':
-          drawType = 'LineString'
-          break;
-        case 'Circle':
-          drawType = 'Circle'
-          break;
-        default:
-          drawType = 'Polygon'
-          break;
-      }
-      if ( type === drawType && this.$store.state.map.selectedAddtional.includes('Measure')) {
-        if (drawType === 'LineString') {
-          measureOutput = this.formatLength(geometry)
-          measureOutputCoord = new Point(geometry.getLastCoordinate())
-          segmentOutputCoord = geometry
-        } else if (drawType === 'Polygon') {
-          measureOutput = this.formatArea(geometry)
-          measureOutputCoord = geometry.getInteriorPoint()
-          segmentOutputCoord = new LineString(geometry.getCoordinates()[0])
-        }
-        this.outputStyle.setGeometry(measureOutputCoord);
-        this.outputStyle.getText().setText(measureOutput);
-        if (this.$store.state.map.selectedDrawType !== 'Point') style.push(this.outputStyle)
-      }
-      if ( segmentOutputCoord && this.$store.state.map.selectedAddtional.includes('Measure Segment Length') ) this.showSegment(segmentOutputCoord, style)
+      // let drawType, measureOutput, measureOutputCoord, segmentOutputCoord
+      // switch (this.$store.state.map.selectedDrawType) {
+      //   case 'Point':
+      //     drawType = 'Point'
+      //     break;
+      //   case 'LineString':
+      //     drawType = 'LineString'
+      //     break;
+      //   case 'Circle':
+      //     drawType = 'Circle'
+      //     break;
+      //   default:
+      //     drawType = 'Polygon'
+      //     break;
+      // }
+      // if ( type === drawType && this.$store.state.map.selectedAddtional.includes('Measure')) {
+      //   if (drawType === 'LineString') {
+      //     measureOutput = this.formatLength(geometry)
+      //     measureOutputCoord = new Point(geometry.getLastCoordinate())
+      //     segmentOutputCoord = geometry
+      //   } else if (drawType === 'Polygon') {
+      //     measureOutput = this.formatArea(geometry)
+      //     measureOutputCoord = geometry.getInteriorPoint()
+      //     segmentOutputCoord = new LineString(geometry.getCoordinates()[0])
+      //   }
+      //   this.outputStyle.setGeometry(measureOutputCoord);
+      //   this.outputStyle.getText().setText(measureOutput);
+      //   if (this.$store.state.map.selectedDrawType !== 'Point') style.push(this.outputStyle)
+      // }
+      // if ( segmentOutputCoord && this.$store.state.map.selectedAddtional.includes('Measure Segment Length') ) this.showSegment(segmentOutputCoord, style)
       if ( showHint && type === 'Point' ) {
         this.hintStyle.getText().setText(this.hingMsg);
         style.push(this.hintStyle);

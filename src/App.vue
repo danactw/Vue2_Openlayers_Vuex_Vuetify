@@ -19,11 +19,9 @@ export default {
       routerLinks: [
         { path: 'Home', title: 'Home'},
         { path: 'About', title: 'Main Map'},
-        // { path: 'DrawMap', title: 'Draw Map'},
         { path: 'InteractionMap', title: 'Interaction Map'},
         // { path: 'SwipeMap', title: 'Swipe Map'},
-        // { path: 'ClusterMap', title: 'Cluster Map'},
-        // { path: 'VectorMap', title: 'Vector Map'},
+        { path: 'VectorMap', title: 'Vector Map'},
       ],
     }
   }

@@ -20,6 +20,11 @@ const routes = [
     name: 'InteractionMap',
     component: () => import('../views/InteractionMap.vue')
   },
+  {
+    path: '/vector',
+    name: 'VectorMap',
+    component: () => import('../views/VectorMap.vue')
+  },
 ]
 
 const router = new VueRouter({

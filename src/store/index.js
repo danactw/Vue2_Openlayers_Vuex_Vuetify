@@ -13,7 +13,8 @@ export default new Vuex.Store({
       selectedMapControls: [],
       selectedinteraction: 'Draw',
       selectedDrawType: 'LineString',
-      selectedAddtional: ['Measure']
+      selectedAddtional: ['Measure'],
+      selectedVectorLayer: 'Countries'
     }
   },
   getters: {

@@ -16,8 +16,9 @@ export default {
       map: null
     }
   },
-  mounted() {
-    this.map = new Map({
+  methods: {
+    initMap() {
+      this.map = new Map({
         layers: [
           new TileLayer({
             source: new OSM(),
@@ -29,13 +30,13 @@ export default {
           zoom: 2,
         }),
       })
+    }
+  },
+  mounted() {
+    this.initMap()
   }
 }
 </script>
 
 <style>
-.map {
-  width: 100vw;
-  height: 100vh;
-}
 </style>
