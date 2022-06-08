@@ -25,6 +25,26 @@ const routes = [
     name: 'VectorMap',
     component: () => import('../views/VectorMap.vue')
   },
+  {
+    path: '/userauth',
+    name: 'UserAuth',
+    component: () => import('../views/UserAuth.vue')
+  },
+  {
+    path: '/userprofile',
+    name: 'UserProfile',
+    component: () => import('../views/UserProfile.vue')
+  },
+  {
+    path: '/shoppingcart',
+    name: 'ShoppingCart',
+    component: () => import('../views/ShoppingCart.vue')
+  },
+  {
+    path: '/ordertracking',
+    name: 'OrderTracking',
+    component: () => import('../views/OrderTracking.vue')
+  },
 ]
 
 const router = new VueRouter({

@@ -1,5 +1,13 @@
 <template>
   <div>
+    <v-alert
+      shaped
+      color="rgba(89, 89, 89, 0.8)"
+      dark
+      dismissible
+    >
+      Please wait for the map to be fully loaded.
+    </v-alert>
     <v-navigation-drawer app clipped>
       <v-list>
         <v-list-group no-action sub-group value="true">
@@ -385,5 +393,10 @@ export default {
   background-color: rgb(255, 230, 179);
   border-radius: 10px;
   padding: 5px;
+}
+.v-alert {
+  position: absolute;
+  z-index: 10;
+  width: 100%;
 }
 </style>
