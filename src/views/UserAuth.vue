@@ -1,5 +1,5 @@
 <template>
-  <v-card width="500" class="mx-auto mt-10 pa-4">
+  <v-card width="500" class="mx-auto mt-10 pa-4" outlined>
     <v-tabs v-model="tabs" grow>
       <v-tab>Sign Up</v-tab>
       <v-tab>Log In</v-tab>

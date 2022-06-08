@@ -321,6 +321,7 @@ export default {
         layers: [ baseLayerGroup, optionalLayerGroup ],
         target: 'map',
         view: view4326,
+        controls: defaults({ attribution: false })
       })
     },
   },
