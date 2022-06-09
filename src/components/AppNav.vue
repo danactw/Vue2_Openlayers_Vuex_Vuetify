@@ -2,11 +2,15 @@
   <v-app-bar app clipped-left height="55">
     <v-container>
       <v-row>
-        <v-col>
+        <v-col class="pl-0" cols="4">
           <v-toolbar-title v-if="$route.path!=='/'">Openlayers</v-toolbar-title>
-          <v-app-bar-nav-icon v-else @click="toggleNavDrawer"></v-app-bar-nav-icon>
+          <div class="d-flex" v-else >
+            <v-app-bar-nav-icon @click="toggleNavDrawer" class="mr-4"></v-app-bar-nav-icon>
+            <SearchLocation />
+          </div>
         </v-col>
-        <v-col class="text-right" align-self="center">
+        <v-spacer></v-spacer>
+        <v-col class="text-right" cols="6" align-self="center">
           <v-btn v-for="(link, index) in routerLinks" :key="index" :to="{ name: link.path }" rounded plain> {{ link.title }} </v-btn>
           <v-menu offset-y nudge-bottom="10">
             <template v-slot:activator="{ on, attrs }">        
@@ -37,36 +41,41 @@
 </template>
 
 <script>
+import SearchLocation from "./SearchLocation.vue";
 export default {
-  data() {
-    return {
-      routerLinks: [
-        { path: 'Home', title: 'Home'},
-        { path: 'About', title: 'Main Map'},
-        { path: 'InteractionMap', title: 'Interaction Map'},
-        { path: 'VectorMap', title: 'Vector Map'},
-      ],
-      dropDowns: [
-        { path: 'UserAuth', title: 'Sign up / Login in'},
-        { path: 'UserProfile', title: 'User Profile'},
-        { path: 'ShoppingCart', title: 'Shopping Cart'},
-        { path: 'OrderTracking', title: 'Order Tracking'},
-      ],
-      user: {
-        initials: 'UN',
-        fullName: 'User Name',
-        email: 'user@gmail.com',
-      },
-    }
-  },
-  methods: {
-    toggleNavDrawer() {
-      this.$store.commit('TOGGLE_showNavDrawer')
-    }
-  }
+    data() {
+        return {
+            routerLinks: [
+                { path: "Home", title: "Home" },
+                { path: "About", title: "Main Map" },
+                { path: "InteractionMap", title: "Interaction Map" },
+                { path: "VectorMap", title: "Vector Map" },
+            ],
+            dropDowns: [
+                { path: "UserAuth", title: "Sign up / Login in" },
+                { path: "UserProfile", title: "User Profile" },
+                { path: "ShoppingCart", title: "Shopping Cart" },
+                { path: "OrderTracking", title: "Order Tracking" },
+            ],
+            user: {
+                initials: "UN",
+                fullName: "User Name",
+                email: "user@gmail.com",
+            },
+        };
+    },
+    methods: {
+        toggleNavDrawer() {
+            this.$store.commit("TOGGLE_showNavDrawer");
+        }
+    },
+    components: { SearchLocation }
 }
 
 </script>
 
 <style>
+.v-toolbar__content {
+  padding: 4px 0;
+}
 </style>
