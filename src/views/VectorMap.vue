@@ -394,7 +394,7 @@ export default {
   border-radius: 10px;
   padding: 5px;
 }
-.v-alert {
+#app .v-alert {
   position: absolute;
   z-index: 10;
   width: 100%;
