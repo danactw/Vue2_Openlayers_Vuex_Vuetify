@@ -28,22 +28,22 @@ const routes = [
   {
     path: '/userauth',
     name: 'UserAuth',
-    component: () => import('../views/UserAuth.vue')
+    component: () => import('../views/User/UserAuth.vue')
   },
   {
     path: '/userprofile',
     name: 'UserProfile',
-    component: () => import('../views/UserProfile.vue')
+    component: () => import('../views/User/UserProfile.vue')
   },
   {
     path: '/shoppingcart',
     name: 'ShoppingCart',
-    component: () => import('../views/ShoppingCart.vue')
+    component: () => import('../views/User/ShoppingCart.vue')
   },
   {
     path: '/ordertracking',
     name: 'OrderTracking',
-    component: () => import('../views/OrderTracking.vue')
+    component: () => import('../views/User/OrderTracking.vue')
   },
 ]
 
