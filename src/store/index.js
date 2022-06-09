@@ -15,11 +15,15 @@ export default new Vuex.Store({
       selectedDrawType: 'LineString',
       selectedAddtional: ['Measure'],
       selectedVectorLayer: 'Cluster'
-    }
+    },
+    showNavDrawer: false
   },
   getters: {
   },
   mutations: {
+    TOGGLE_showNavDrawer(state) {
+      state.showNavDrawer = !state.showNavDrawer
+    }
   },
   actions: {
   },
