@@ -1,19 +1,64 @@
 <template>
-  <v-navigation-drawer clipped :app="$store.state.showNavDrawer">
-    <v-list>
-      <v-list-item>
-        <v-list-item-content>
-          <v-list-item-title class="title">找影像?</v-list-item-title>
-          <v-list-item-subtitle><a href="/atisweb/WebProvide/UserManual" target="_blank">使用手冊</a><v-icon class="ml-2 mb-2">mdi-book-open-blank-variant</v-icon></v-list-item-subtitle>
-        </v-list-item-content>
-        <v-btn icon @click.stop="toggleNavDrawer">
-          <v-icon>mdi-chevron-left</v-icon>
-        </v-btn>
-      </v-list-item>
-
-      <v-divider class="pb-4"></v-divider>
-      
-      <v-list-item>
+  <v-menu 
+    transition="slide-x-transition"
+    v-model="$store.state.showMenu"
+    :close-on-content-click="false"
+    :close-on-click="false"
+    :position-x="$store.state.clickedPositionX"
+    :position-y="$store.state.clickedPositionY"
+    :nudge-bottom="55"
+    top
+    >
+    <v-card>
+      <v-list>
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title>City & District</v-list-item-title>
+            <v-list-item-subtitle>
+              {{$store.state.clickedCoordinateX}}, {{$store.state.clickedCoordinateY}}
+            </v-list-item-subtitle>
+          </v-list-item-content>
+          <v-list-item-action class="ma-0 pa-0">
+            <v-btn
+              v-model="fav"
+              :class="fav ? 'red--text' : ''"
+              icon
+              @click="fav=!fav"
+            >
+              <v-icon>mdi-heart</v-icon>
+            </v-btn>
+          </v-list-item-action>
+        </v-list-item>
+        <v-list-item>
+          <v-subheader class="mr-0 pb-2 pl-0">半徑</v-subheader>
+          <v-slider
+            v-model="updateRadius"
+            class="ma-n2 pa-n2"
+            :max="5"
+            step="1"
+            ticks="always"
+            tick-size="4"
+            hide-details
+            thumb-color="blue lighten-2"
+            dense
+          >
+            <template v-slot:append>
+              <v-select
+                v-model="updateRadius"
+                :items="distanceTable"
+                item-text="label"
+                item-value="value"
+                class="mt-0 pt-0"
+                hide-details
+                single-line
+                dense
+                style="width: 90px; font-size: small"
+              ></v-select>
+            </template>
+          </v-slider>
+        </v-list-item>
+        <v-divider></v-divider>
+<v-list-item>
         <v-list-item-content>
           <v-list-item-title class="title mb-4">影像組合：</v-list-item-title>
           <v-container class="py-0">
@@ -75,14 +120,31 @@
           <v-list-item-title v-text="item.text"></v-list-item-title>
         </v-list-item>
       </template>
-    </v-list>
-  </v-navigation-drawer>
+      </v-list>
+      <v-card-actions class="mt-0 pt-0">
+        <v-spacer></v-spacer>
+        <v-btn text @click="$store.state.showMenu=false">關閉</v-btn>
+        <v-btn :disabled="selected.length===0" color="primary" text >找影像</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-menu>
 </template>
 
 <script>
 export default {
-  data: () => ({
-    items: [
+  data() {
+    return {
+      fav: false,
+      updateRadius: '',
+      distanceTable: [
+        { label: '50 公尺', value: 0 },
+        { label: '250 公尺', value: 1 },
+        { label: '500 公尺', value: 2 },
+        { label: '1 公里', value: 3 },
+        { label: '1.5 公里', value: 4 },
+        { label: '2 公里', value: 5 }
+      ],
+      items: [
       {
         text: '正射影像',
         icon: 'mdi-image-area',
@@ -95,19 +157,19 @@ export default {
     loading: false,
     search: '',
     selected: [],
-  }),
-
+    }
+  },
   computed: {
     allSelected () {
       return this.selected.length === this.items.length
     },
     categories () {
-      const search = this.search
+      const search = this.search.toLowerCase()
 
       if (!search) return this.items
 
       return this.items.filter(item => {
-        const text = item.text
+        const text = item.text.toLowerCase()
 
         return text.indexOf(search) > -1
       })
@@ -128,32 +190,9 @@ export default {
       this.search = ''
     },
   },
-
-  methods: {
-    toggleNavDrawer() {
-      this.$store.commit('TOGGLE_showNavDrawer')
-    },
-    next () {
-      this.loading = true
-
-      setTimeout(() => {
-        this.search = ''
-        this.selected = []
-        this.loading = false
-      }, 2000)
-    },
-  }
 }
 </script>
 
 <style>
-#app .v-text-field--full-width > .v-input__control > .v-input__slot{
-  display: block;
-  min-height: 30px;
-}
 
-/* to position to 'Search' in the correct location above the line */
-#app .v-text-field--full-width .v-label {
-  top: 5px;
-}
 </style>

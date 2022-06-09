@@ -16,7 +16,13 @@ export default new Vuex.Store({
       selectedAddtional: ['Measure'],
       selectedVectorLayer: 'Cluster'
     },
-    showNavDrawer: false
+    showNavDrawer: false,
+    showInfo: false,
+    clickedCoordinateX: 0,
+    clickedCoordinateY: 0,
+    clickedPositionX: 0,
+    clickedPositionY: 0,
+    showMenu: false
   },
   getters: {
   },
