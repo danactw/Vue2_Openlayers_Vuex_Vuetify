@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div id="home">
+    <SelectLayer/>
     <div id="map" class="map" ref="mapContainer"></div>
     <div ref="mapInfoPopup" id="home">
       <mapInfoPopup v-show="$store.state.showInfo"/>
@@ -12,15 +13,16 @@
 import 'ol/ol.css';
 import Map from 'ol/Map';
 import View from 'ol/View';
-import { OSM } from 'ol/source';
 import { Tile as TileLayer } from 'ol/layer';
+import { OSM, Vector as VectorSource, TileWMS } from 'ol/source'
 import Overlay from 'ol/Overlay';
 import Circle from 'ol/geom/Circle';
 import MapInfoPopup from '../components/MapInfoPopup.vue'
 import MapMenuPopup from '@/components/MapMenuPopup.vue';
+import SelectLayer from '@/components/SelectLayer.vue';
 
 export default {
-  components: { MapInfoPopup, MapMenuPopup },
+  components: { MapInfoPopup, MapMenuPopup, SelectLayer },
   data() {
     return {
       mapContainer: null,
@@ -84,5 +86,8 @@ export default {
   width: 100vw;
   height: calc(100vh - 55px);
   overflow: hidden;
+}
+#home {
+  position: relative;
 }
 </style>
