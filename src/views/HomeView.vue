@@ -1,6 +1,20 @@
 <template>
   <div id="home">
-    <SelectLayer :layerOpt="optionalLayersInfo" :layerBase="baseLayersInfo" @changeOpacity="changeOpacity" />
+        <div
+          id="btnGroup"
+          class="d-flex flex-column"
+        >
+          <v-btn class="mb-4" rounded x-small height="40px" color="primary" dark @click="fitTaiwan">
+            <v-icon>mdi-fullscreen</v-icon>
+          </v-btn>
+          <v-btn class="mb-4" rounded x-small height="40px" color="primary" dark @click="zoomin">
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+          <v-btn class="mb-4" rounded x-small height="40px" color="primary" dark @click="zoomout">
+            <v-icon>mdi-minus</v-icon>
+          </v-btn>
+          <SelectLayer :layerOpt="optionalLayersInfo" :layerBase="baseLayersInfo" @changeOpacity="changeOpacity" />
+        </div>
     <div id="map" class="map" ref="mapContainer"></div>
     <div ref="mapInfoPopup" id="home">
       <mapInfoPopup v-show="$store.state.showInfo"/>
@@ -16,6 +30,7 @@ import View from 'ol/View';
 import { Tile as TileLayer, Graticule } from 'ol/layer';
 import LayerGroup from 'ol/layer/Group';
 import { OSM, XYZ, Stamen, TileDebug, TileArcGISRest, TileWMS } from 'ol/source';
+import { defaults, FullScreen, OverviewMap, ScaleLine, ZoomSlider, ZoomToExtent, Attribution } from 'ol/control';
 import Overlay from 'ol/Overlay';
 import Circle from 'ol/geom/Circle';
 import { Stroke } from 'ol/style';
@@ -143,7 +158,11 @@ export default {
           center: [13471657.33321689, 2725618.3248579176],
           zoom: 6,
         }),
+        controls: defaults({ attribution: false, zoom: false })
       })
+      this.map.addControl(new Attribution({
+        collapsible: true
+      }))
     },
     changeOpacity(info) {
       this.optionalLayers.forEach( layer => {
@@ -151,7 +170,16 @@ export default {
           layer.setOpacity(Number(info.layerOpacity))
         }
       })
-    }
+    },
+    zoomin() {
+      this.map.getView().setZoom(this.map.getView().getZoom()+1)
+    },
+    zoomout() {
+      this.map.getView().setZoom(this.map.getView().getZoom()-1)
+    },
+    fitTaiwan() {
+      this.map.getView().fit([13003979.213346737, 2448310.2757384996, 14032671.756348401, 2979709.662656437])
+    },
   },
   mounted() {
     this.initMap()
@@ -170,6 +198,7 @@ export default {
       this.$store.state.clickedPositionX = this.map.getSize()[0]/2
       this.$store.state.clickedPositionY = this.map.getSize()[1]/2
     })
+    this.map.on('click', e => console.log(e.coordinate))
   },
   created() {
     this.$store.watch(
@@ -217,5 +246,11 @@ export default {
 }
 #home {
   position: relative;
+}
+#btnGroup {
+  position: absolute;
+  bottom: 50px;
+  right: 20px;
+  z-index: 10;
 }
 </style>

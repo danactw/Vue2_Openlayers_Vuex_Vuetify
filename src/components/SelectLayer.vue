@@ -14,6 +14,7 @@
         dark
         v-bind="attrs"
         v-on="on"
+        rounded x-small height="40px"
       >
         <v-icon>mdi-layers</v-icon>
       </v-btn>
@@ -114,12 +115,12 @@ export default {
 </script>
 
 <style>
-#selectLayerBtn {
+/* #selectLayerBtn {
   position: absolute;
   bottom: 35px;
   right: 10px;
   z-index: 10;
-}
+} */
 #selectLayer .v-input--selection-controls {
   margin-top: -10px;
 }
