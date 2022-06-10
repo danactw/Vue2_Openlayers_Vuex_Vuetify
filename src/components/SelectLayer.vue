@@ -2,7 +2,7 @@
   <v-menu 
     top 
     offset-y 
-    :nudge-right="10"
+    :nudge-top="10"
     max-width="600"
     max-height="600"
     :close-on-content-click="false" 
@@ -15,11 +15,11 @@
         v-bind="attrs"
         v-on="on"
       >
-        Dropdown
+        <v-icon>mdi-layers</v-icon>
       </v-btn>
     </template>
-    <!-- 底圖選項 -->
     <v-card class="pa-4" id="selectLayer">
+      <!-- 底圖選項 -->
       <v-card-title>底圖選項(擇一)</v-card-title>
       <v-row v-for="layer in layerBase" :key="layer.title">
         <v-col cols="3" align-self="center">
@@ -45,7 +45,7 @@
         </v-col>
       </v-row>
       <v-divider class="mt-10"></v-divider>
-    <!-- 影像圖層選項 -->
+      <!-- 影像圖層選項 -->
       <v-card-title>影像圖層選項</v-card-title>
       <v-row v-for="layer in layerOpt" :key="layer.title">
         <v-col cols="3" align-self="start">
@@ -74,12 +74,14 @@
                     <v-card-text class="d-flex">
                       不透明度
                       <v-slider
-                        :value="layer.opacity"
+                        v-model="layer.opacity"
                         step="0.1"
                         min="0"
                         max="1"
                         thumb-label
                         ticks
+                        @change="changeOpacity(layer.title)"
+                        :disabled="!$store.state.homeMap.selectedOptionalLayers.includes(layer.title)"
                       ></v-slider>
                     </v-card-text>
                   </v-card>
@@ -94,10 +96,19 @@
 </template>
 
 <script>
+import { throws } from 'assert'
+
 export default {
   props: {
     layerBase: Array,
     layerOpt: Array
+  },
+  methods: {
+    changeOpacity(layerTitle) {
+      this.layerOpt.forEach(layer => {
+        if (layer.title === layerTitle) this.$emit('changeOpacity', {layerTitle, layerOpacity: layer.opacity})
+      })
+    }
   }
 }
 </script>
@@ -105,7 +116,7 @@ export default {
 <style>
 #selectLayerBtn {
   position: absolute;
-  bottom: 0;
+  bottom: 35px;
   right: 10px;
   z-index: 10;
 }

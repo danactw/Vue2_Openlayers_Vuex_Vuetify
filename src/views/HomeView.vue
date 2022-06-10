@@ -1,6 +1,6 @@
 <template>
   <div id="home">
-    <SelectLayer :layerOpt="optionalLayersInfo" :layerBase="baseLayersInfo" />
+    <SelectLayer :layerOpt="optionalLayersInfo" :layerBase="baseLayersInfo" @changeOpacity="changeOpacity" />
     <div id="map" class="map" ref="mapContainer"></div>
     <div ref="mapInfoPopup" id="home">
       <mapInfoPopup v-show="$store.state.showInfo"/>
@@ -80,7 +80,7 @@ export default {
           },
           transition: 0
         }),
-        visible: true,
+        visible: false,
         opacity: 1,
         title: "ATIS_MNC",
         label: "全臺鑲嵌無雲正射影像",
@@ -89,7 +89,7 @@ export default {
       })
       const tileDebug = new TileLayer({
         source: new TileDebug(),
-        visible: false,
+        visible: true,
         opacity: 1,
         zIndex: 0,
         title: "Tile Debug",
@@ -130,7 +130,7 @@ export default {
       const optionalLayerGroup = new LayerGroup({
           layers: this.optionalLayers
       });
-      this.optionalLayers.forEach( layer=> {
+      this.optionalLayers.forEach( layer => {
         this.optionalLayersInfo.push({title: layer.get('title'), label: layer.get('label'), img: layer.get('img'), description: layer.get('description'), opacity: layer.get('opacity')})
       })
       this.drawCircle = new Circle({
@@ -143,6 +143,13 @@ export default {
           center: [13471657.33321689, 2725618.3248579176],
           zoom: 6,
         }),
+      })
+    },
+    changeOpacity(info) {
+      this.optionalLayers.forEach( layer => {
+        if (info.layerTitle === layer.get('title')) {
+          layer.setOpacity(Number(info.layerOpacity))
+        }
       })
     }
   },
@@ -190,6 +197,10 @@ export default {
           if (newValue.includes(layer.get('title'))) {
             layer.setVisible(true)
             layer.setOpacity(1)
+            this.optionalLayersInfo.forEach(item => {
+              if (item.title===layer.get('title'))
+              item.opacity = 1
+            })
           } else layer.setVisible(false)
         })
       }
