@@ -22,7 +22,12 @@ export default new Vuex.Store({
     clickedCoordinateY: 0,
     clickedPositionX: 0,
     clickedPositionY: 0,
-    showMenu: false
+    showMenu: false,
+    homeMap: {
+      currentBaseLayer: 'OSM Standard',
+      selectedOptionalLayers: ['ATIS_MNC'],
+      optionalLayersOpacity: {}
+    }
   },
   getters: {
   },
