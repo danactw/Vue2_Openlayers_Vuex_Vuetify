@@ -228,6 +228,7 @@ export default {
       offset: [-45,0]
     })
     this.map.on('click', (e) => {
+      this.vector.getSource().clear()
       this.$store.state.showInfo = true
       this.$store.state.showMenu = false
       this.map.addOverlay(this.mapInfoOverlay)
