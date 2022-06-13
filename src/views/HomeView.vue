@@ -1,20 +1,6 @@
 <template>
   <div id="home">
-        <div
-          id="btnGroup"
-          class="d-flex flex-column"
-        >
-          <v-btn class="mb-4" rounded x-small height="40px" color="primary" dark @click="fitTaiwan">
-            <v-icon>mdi-fullscreen</v-icon>
-          </v-btn>
-          <v-btn class="mb-4" rounded x-small height="40px" color="primary" dark @click="zoomin">
-            <v-icon>mdi-plus</v-icon>
-          </v-btn>
-          <v-btn class="mb-4" rounded x-small height="40px" color="primary" dark @click="zoomout">
-            <v-icon>mdi-minus</v-icon>
-          </v-btn>
-          <SelectLayer :layerOpt="optionalLayersInfo" :layerBase="baseLayersInfo" @changeOpacity="changeOpacity" />
-        </div>
+    <MapControlsIcon :layerOpt="optionalLayersInfo" :layerBase="baseLayersInfo" @changeOpacity="changeOpacity" @fitTaiwan="fitTaiwan" @zoomin="zoomin" @zoomout="zoomout" />
     <div id="map" class="map" ref="mapContainer"></div>
     <div ref="mapInfoPopup" id="home">
       <mapInfoPopup v-show="$store.state.showInfo"/>
@@ -30,16 +16,16 @@ import View from 'ol/View';
 import { Tile as TileLayer, Graticule } from 'ol/layer';
 import LayerGroup from 'ol/layer/Group';
 import { OSM, XYZ, Stamen, TileDebug, TileArcGISRest, TileWMS } from 'ol/source';
-import { defaults, FullScreen, OverviewMap, ScaleLine, ZoomSlider, ZoomToExtent, Attribution } from 'ol/control';
+// import { defaults, FullScreen, OverviewMap, ScaleLine, ZoomSlider, ZoomToExtent, Attribution } from 'ol/control';
 import Overlay from 'ol/Overlay';
 import Circle from 'ol/geom/Circle';
 import { Stroke } from 'ol/style';
 import MapInfoPopup from '../components/MapInfoPopup.vue'
 import MapMenuPopup from '@/components/MapMenuPopup.vue';
-import SelectLayer from '@/components/SelectLayer.vue';
+import MapControlsIcon from '@/components/MapControlsIcon.vue';
 
 export default {
-  components: { MapInfoPopup, MapMenuPopup, SelectLayer },
+  components: { MapInfoPopup, MapMenuPopup, MapControlsIcon },
   data() {
     return {
       mapContainer: null,
@@ -104,7 +90,7 @@ export default {
       })
       const tileDebug = new TileLayer({
         source: new TileDebug(),
-        visible: true,
+        visible: false,
         opacity: 1,
         zIndex: 0,
         title: "Tile Debug",
@@ -158,11 +144,11 @@ export default {
           center: [13471657.33321689, 2725618.3248579176],
           zoom: 6,
         }),
-        controls: defaults({ attribution: false, zoom: false })
+        // controls: defaults({ attribution: false, zoom: false })
       })
-      this.map.addControl(new Attribution({
-        collapsible: true
-      }))
+      // this.map.addControl(new Attribution({
+      //   collapsible: true
+      // }))
     },
     changeOpacity(info) {
       this.optionalLayers.forEach( layer => {
@@ -198,7 +184,7 @@ export default {
       this.$store.state.clickedPositionX = this.map.getSize()[0]/2
       this.$store.state.clickedPositionY = this.map.getSize()[1]/2
     })
-    this.map.on('click', e => console.log(e.coordinate))
+    // this.map.on('click', e => console.log(e.coordinate))
   },
   created() {
     this.$store.watch(
@@ -215,6 +201,7 @@ export default {
       (newValue, oldValue) => {
         this.map.getLayerGroup().getLayersArray().forEach(layer => {
           layer.setVisible(layer.get('title') === newValue)
+          this.$store.state.homeMap.selectedOptionalLayers = []
         })
       },
     );
@@ -246,11 +233,5 @@ export default {
 }
 #home {
   position: relative;
-}
-#btnGroup {
-  position: absolute;
-  bottom: 50px;
-  right: 20px;
-  z-index: 10;
 }
 </style>

@@ -25,7 +25,7 @@ export default new Vuex.Store({
     showMenu: false,
     homeMap: {
       currentBaseLayer: 'OSM Standard',
-      selectedOptionalLayers: ['Tile Debug'],
+      selectedOptionalLayers: [],
     }
   },
   getters: {
