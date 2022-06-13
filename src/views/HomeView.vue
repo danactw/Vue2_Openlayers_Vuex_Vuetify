@@ -6,6 +6,11 @@
       <mapInfoPopup v-show="$store.state.showInfo"/>
       <map-menu-popup v-show="$store.state.showMenu"/>
     </div>
+    <v-snackbar 
+      v-model="snackbar"
+      light
+      left
+    >{{ snackbarText }}</v-snackbar>
     <v-footer 
       padless
       absolute
@@ -67,7 +72,9 @@ export default {
       vector: null,
       circleFeature: null,
       feature: null,
-      radius: null
+      radius: null,
+      snackbarText: '地理屬性標記已清除！',
+      snackbar: false
     }
   },
   methods: {
@@ -306,6 +313,7 @@ export default {
         if (newValue===false) {
           this.vector.getSource().clear()
           this.$store.state.homeMap.updateRadius = 0
+          this.snackbar = true
         }
       }
     )
