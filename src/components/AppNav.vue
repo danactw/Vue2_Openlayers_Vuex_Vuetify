@@ -12,6 +12,17 @@
         <v-spacer></v-spacer>
         <v-col class="text-right" cols="6" align-self="center">
           <v-btn v-for="(link, index) in routerLinks" :key="index" :to="{ name: link.path }" rounded plain> {{ link.title }} </v-btn>
+          <v-btn :to="{ name: 'ShoppingCart' }" rounded plain color="grey darken-2">
+            <v-badge
+              color="#1DD3B0"
+              :content="$store.state.cartBadge"
+              overlap
+              offset-x="7"
+              ref="cartBadge"
+            >
+              <v-icon>mdi-cart</v-icon>
+            </v-badge>
+          </v-btn>
           <v-menu offset-y nudge-bottom="10">
             <template v-slot:activator="{ on, attrs }">        
               <v-avatar size="36px" v-on="on" v-bind="attrs">
@@ -43,33 +54,33 @@
 <script>
 import SearchLocation from "./SearchLocation.vue";
 export default {
-    data() {
-        return {
-            routerLinks: [
-                { path: "Home", title: "Home" },
-                { path: "About", title: "Main Map" },
-                { path: "InteractionMap", title: "Interaction Map" },
-                { path: "VectorMap", title: "Vector Map" },
-            ],
-            dropDowns: [
-                { path: "UserAuth", title: "Sign up / Login in" },
-                { path: "UserProfile", title: "User Profile" },
-                { path: "ShoppingCart", title: "Shopping Cart" },
-                { path: "OrderTracking", title: "Order Tracking" },
-            ],
-            user: {
-                initials: "UN",
-                fullName: "User Name",
-                email: "user@gmail.com",
-            },
-        };
-    },
-    methods: {
-        toggleNavDrawer() {
-            this.$store.commit("TOGGLE_showNavDrawer");
-        }
-    },
-    components: { SearchLocation }
+  data() {
+    return {
+      routerLinks: [
+        { path: "Home", title: "Home" },
+        { path: "About", title: "Main Map" },
+        { path: "InteractionMap", title: "Interaction Map" },
+        { path: "VectorMap", title: "Vector Map" },
+      ],
+      dropDowns: [
+        { path: "UserAuth", title: "Sign up / Login in" },
+        { path: "UserProfile", title: "User Profile" },
+        { path: "ShoppingCart", title: "Shopping Cart" },
+        { path: "OrderTracking", title: "Order Tracking" },
+      ],
+      user: {
+        initials: "UN",
+        fullName: "User Name",
+        email: "user@gmail.com",
+      },
+    };
+  },
+  methods: {
+    toggleNavDrawer() {
+      this.$store.commit("TOGGLE_showNavDrawer");
+    }
+  },
+  components: { SearchLocation }
 }
 
 </script>

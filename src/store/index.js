@@ -27,7 +27,16 @@ export default new Vuex.Store({
       currentBaseLayer: 'OSM Standard',
       selectedOptionalLayers: [],
       updateRadius: 0,
-    }
+    },
+    cartProgress: 1,
+    cart: {
+      items: [],
+      checking: [],
+      format: [],
+      output: [],
+      count: 0
+    },
+    cartBadge: 0,
   },
   getters: {
   },
