@@ -26,6 +26,7 @@ export default new Vuex.Store({
     homeMap: {
       currentBaseLayer: 'OSM Standard',
       selectedOptionalLayers: [],
+      updateRadius: 0,
     }
   },
   getters: {

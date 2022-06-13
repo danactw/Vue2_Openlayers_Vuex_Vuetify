@@ -32,7 +32,7 @@
         <v-list-item>
           <v-subheader class="mr-0 pb-2 pl-0">半徑</v-subheader>
           <v-slider
-            v-model="updateRadius"
+            v-model="$store.state.homeMap.updateRadius"
             class="ma-n2 pa-n2"
             :max="5"
             step="1"
@@ -44,7 +44,7 @@
           >
             <template v-slot:append>
               <v-select
-                v-model="updateRadius"
+                v-model="$store.state.homeMap.updateRadius"
                 :items="distanceTable"
                 item-text="label"
                 item-value="value"
@@ -135,14 +135,19 @@ export default {
   data() {
     return {
       fav: false,
-      updateRadius: '',
       distanceTable: [
-        { label: '50 公尺', value: 0 },
-        { label: '250 公尺', value: 1 },
-        { label: '500 公尺', value: 2 },
-        { label: '1 公里', value: 3 },
-        { label: '1.5 公里', value: 4 },
-        { label: '2 公里', value: 5 }
+        // { label: '50 公尺', value: 0 },
+        // { label: '250 公尺', value: 1 },
+        // { label: '500 公尺', value: 2 },
+        // { label: '1 公里', value: 3 },
+        // { label: '1.5 公里', value: 4 },
+        // { label: '2 公里', value: 5 }
+        { label: '50 公里', value: 0 },
+        { label: '100 公里', value: 1 },
+        { label: '200 公里', value: 2 },
+        { label: '500 公里', value: 3 },
+        { label: '1000 公里', value: 4 },
+        { label: '1500 公里', value: 5 }
       ],
       items: [
       {

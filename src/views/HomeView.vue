@@ -36,15 +36,17 @@
 import 'ol/ol.css';
 import Map from 'ol/Map';
 import View from 'ol/View';
-import { Tile as TileLayer, Graticule } from 'ol/layer';
+import { Tile as TileLayer, Vector as VectorLayer, Graticule } from 'ol/layer';
 import LayerGroup from 'ol/layer/Group';
-import { OSM, XYZ, Stamen, TileDebug, TileArcGISRest, TileWMS } from 'ol/source';
+import { OSM, XYZ, Stamen, TileDebug, TileArcGISRest, TileWMS, Vector as VectorSource } from 'ol/source';
 import { defaults, ScaleLine } from 'ol/control';
 import Overlay from 'ol/Overlay';
 import Circle from 'ol/geom/Circle';
-import { Stroke } from 'ol/style';
+import {Circle as CircleStyle, Fill, Stroke, Style} from 'ol/style';
 import {toLonLat} from 'ol/proj';
 import {toStringXY} from 'ol/coordinate';
+import {getPointResolution} from 'ol/proj';
+import Feature from 'ol/Feature';
 import MapInfoPopup from '../components/MapInfoPopup.vue'
 import MapMenuPopup from '@/components/MapMenuPopup.vue';
 import MapControlsIcon from '@/components/MapControlsIcon.vue';
@@ -61,7 +63,11 @@ export default {
       baseLayersInfo: [],
       optionalLayers: null,
       optionalLayersInfo: [],
-      mousePosition: '0,0'
+      mousePosition: '0,0',
+      vector: null,
+      circleFeature: null,
+      feature: null,
+      radius: null
     }
   },
   methods: {
@@ -164,11 +170,21 @@ export default {
         units: 'metric',
         minWidth: 50
       });
-      this.drawCircle = new Circle({
-
+      // DrawCircle
+      this.vector = new VectorLayer({
+        source: new VectorSource({}),
+        style: new Style({
+          fill: new Fill({
+            color: 'rgba(255, 255, 255,0.5)'
+          }),
+          stroke: new Stroke({
+            color: 'rgba(255, 0, 0, 0.8)',
+            width: 2
+          }),
+        }),
       })
       this.map = new Map({
-        layers: [ baseLayerGroup, optionalLayerGroup ],
+        layers: [ baseLayerGroup, optionalLayerGroup, this.vector ],
         target: 'map',
         view: new View({
           center: [13471657.33321689, 2725618.3248579176],
@@ -213,11 +229,14 @@ export default {
       this.$store.state.clickedCoordinateY = e.coordinate[1]
       this.$store.state.clickedPositionX = this.map.getSize()[0]/2
       this.$store.state.clickedPositionY = this.map.getSize()[1]/2
+      this.circleFeature = new Feature({
+        geometry: new Circle(e.coordinate,50*1000/getPointResolution('EPSG:3857', 1, e.coordinate))
+      })
+      this.vector.getSource().addFeature(this.circleFeature)
     })
     this.map.on('pointermove', e => {
       this.mousePosition = toStringXY(toLonLat(e.coordinate),2)
     })
-    // this.map.on('click', e => console.log(e.coordinate))
   },
   created() {
     this.$store.watch(
@@ -252,6 +271,42 @@ export default {
             })
           } else layer.setVisible(false)
         })
+      }
+    ),
+    this.$store.watch(
+      state => state.homeMap.updateRadius,
+      (newValue, oldValue) => {
+        switch (newValue) {
+          case 0:
+            this.radius = 50
+            break;
+          case 1:
+            this.radius = 100
+            break;
+          case 2:
+            this.radius = 200
+            break;
+          case 3:
+            this.radius = 500
+            break;
+          case 4:
+            this.radius = 1000
+            break;
+          case 5:
+            this.radius = 1500
+            break;
+        }
+        const center = this.circleFeature.getGeometry().getCenter()
+        this.circleFeature.getGeometry().setRadius(this.radius*1000/getPointResolution('EPSG:3857', 1, center))
+      }
+    ),
+    this.$store.watch(
+      state => state.showMenu,
+      (newValue, oldValue) => {
+        if (newValue===false) {
+          this.vector.getSource().clear()
+          this.$store.state.homeMap.updateRadius = 0
+        }
       }
     )
   }
