@@ -1,11 +1,34 @@
 <template>
-  <div id="home">
+  <div>
     <MapControlsIcon :layerOpt="optionalLayersInfo" :layerBase="baseLayersInfo" @changeOpacity="changeOpacity" @fitTaiwan="fitTaiwan" @zoomin="zoomin" @zoomout="zoomout" />
     <div id="map" class="map" ref="mapContainer"></div>
     <div ref="mapInfoPopup" id="home">
       <mapInfoPopup v-show="$store.state.showInfo"/>
       <map-menu-popup v-show="$store.state.showMenu"/>
     </div>
+    <v-footer 
+      padless
+      absolute
+      color="transparent"
+    >
+      <v-col
+        class="text-center"
+        align-self="center"
+        cols="12"
+      >
+        <span>
+          {{ new Date().getFullYear() }} — <strong>農林航空測量所</strong> &nbsp;
+        </span>
+        <v-btn
+          rounded
+          small
+        >
+          {{ mousePosition }} <span class="grey--text">(EPSG:4326)</span>
+        </v-btn>
+        <span>
+        </span>
+      </v-col>
+    </v-footer>
   </div>
 </template>
 
@@ -16,10 +39,12 @@ import View from 'ol/View';
 import { Tile as TileLayer, Graticule } from 'ol/layer';
 import LayerGroup from 'ol/layer/Group';
 import { OSM, XYZ, Stamen, TileDebug, TileArcGISRest, TileWMS } from 'ol/source';
-// import { defaults, FullScreen, OverviewMap, ScaleLine, ZoomSlider, ZoomToExtent, Attribution } from 'ol/control';
+import { defaults, ScaleLine } from 'ol/control';
 import Overlay from 'ol/Overlay';
 import Circle from 'ol/geom/Circle';
 import { Stroke } from 'ol/style';
+import {toLonLat} from 'ol/proj';
+import {toStringXY} from 'ol/coordinate';
 import MapInfoPopup from '../components/MapInfoPopup.vue'
 import MapMenuPopup from '@/components/MapMenuPopup.vue';
 import MapControlsIcon from '@/components/MapControlsIcon.vue';
@@ -35,7 +60,8 @@ export default {
       baseLayers: null,
       baseLayersInfo: [],
       optionalLayers: null,
-      optionalLayersInfo: []
+      optionalLayersInfo: [],
+      mousePosition: '0,0'
     }
   },
   methods: {
@@ -134,6 +160,10 @@ export default {
       this.optionalLayers.forEach( layer => {
         this.optionalLayersInfo.push({title: layer.get('title'), label: layer.get('label'), img: layer.get('img'), description: layer.get('description'), opacity: layer.get('opacity')})
       })
+      const scaleLine = new ScaleLine({
+        units: 'metric',
+        minWidth: 50
+      });
       this.drawCircle = new Circle({
 
       })
@@ -144,7 +174,7 @@ export default {
           center: [13471657.33321689, 2725618.3248579176],
           zoom: 6,
         }),
-        // controls: defaults({ attribution: false, zoom: false })
+        controls: defaults({zoom: false}).extend([scaleLine])
       })
       // this.map.addControl(new Attribution({
       //   collapsible: true
@@ -183,6 +213,9 @@ export default {
       this.$store.state.clickedCoordinateY = e.coordinate[1]
       this.$store.state.clickedPositionX = this.map.getSize()[0]/2
       this.$store.state.clickedPositionY = this.map.getSize()[1]/2
+    })
+    this.map.on('pointermove', e => {
+      this.mousePosition = toStringXY(toLonLat(e.coordinate),2)
     })
     // this.map.on('click', e => console.log(e.coordinate))
   },
