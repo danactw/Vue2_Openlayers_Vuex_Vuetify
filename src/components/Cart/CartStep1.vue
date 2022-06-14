@@ -11,17 +11,60 @@
       @page-count="pageCount = $event"
       class="elevation-1"
       :items-per-page="5"
+      hide-default-footer
     >
+      <template v-slot:[`item.shootingdate`]="{ item }">
+        {{ format_date(item.shootingdate) }}
+      </template>
       <template v-slot:[`item.formatStatus`]="{ item }">
-        <v-chip
-          v-for="format in formatConfig"
+        <tr 
+          v-for="format in item.formatStatus"
           :key="format.id"
         >
-        {{ format.label }}
-        </v-chip>
+          <td>
+            <v-chip
+              :input-value="format.checked"
+              filter
+              filter-icon="mdi-checkbox-marked-circle"
+              @click="updateQuantity(format)"
+            >
+            {{ format.label }}
+            </v-chip>
+          </td>
+        </tr>
+      </template>
+      <template v-slot:[`item.quantity`]="{item}">
+        <tr 
+          v-for="format in item.formatStatus"
+          :key="format.id"
+        >
+          <td>
+            <v-text-field
+              v-model="format.quantity"
+              hide-details
+              single-line
+              dense
+              class="mb-2"
+              type="number"
+              min="0"
+              @change="getItemTotal(item)"
+              :disabled="!format.checked"
+            />
+          </td>
+        </tr>
+      </template>
+      <template v-slot:[`item.pricing`]="{item}">
+        <tr 
+          v-for="format in item.formatStatus"
+          :key="format.id"
+        >
+          <td>
+            <span> $ {{ format.pricing.toLocaleString('en-US') }} </span>
+          </td>
+        </tr>
       </template>
       <template v-slot:[`item.total`]="{ item }">
-        {{ item.quantity * item.pricing }}
+        $ {{ getItemTotal(item).toLocaleString('en-US') }}
       </template>
       <template v-slot:[`item.action`]="{ item }">
         <v-icon @click="deleteItem(item)">
@@ -52,6 +95,7 @@
 </template>
 
 <script>
+import moment from 'moment';
 export default {
   data () {
     return {
@@ -73,83 +117,47 @@ export default {
         {
           filename: "Frozen Yogurt",
           image: 159,
-          shootingdate: 6,
+          shootingdate: 2022/1/1,
           cloudrate: 24,
-          formatStatus: 1,
-          quantity: 2,
-          pricing: 100
+          formatStatus: [
+            {id:1 , pricing: 600, label: '紙圖', checked: false, quantity: 0},
+            {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 1},
+          ]
         },
         {
           filename: "Eclair",
-          image: 262,
-          shootingdate: 16,
-          cloudrate: 23,
-          formatStatus: 2,
-          quantity: 2,
-          pricing: 100
-        },
-        {
-          filename: "Cupcake",
-          image: 305,
-          shootingdate: 3.7,
-          cloudrate: 67,
-          formatStatus: 1,
-          quantity: 2,
-          pricing: 100
-        },
-        {
-          filename: "Lollipop",
-          image: 392,
-          shootingdate: 0.2,
-          cloudrate: 98,
-          formatStatus: 1,
-          quantity: 2,
-          pricing: 100
-        },
-        {
-          filename: "Honeycomb",
-          image: 408,
-          shootingdate: 3.2,
-          cloudrate: 87,
-          formatStatus: 2,
-          quantity: 2,
-          pricing: 100
-        },
-        {
-          filename: "Donut",
-          image: 452,
-          shootingdate: 25,
-          cloudrate: 51,
-          formatStatus: 2,
-          quantity: 2,
-          pricing: 100
-        },
-        {
-          filename: "KitKat",
-          image: 518,
-          shootingdate: 26,
-          cloudrate: 65,
-          formatStatus: 1,
-          quantity: 2,
-          pricing: 100
-        },
+          image: 159,
+          shootingdate: 2022/1/1,
+          cloudrate: 24,
+          formatStatus: [
+            {id:1 , pricing: 600, label: '紙圖', checked: true, quantity: 1},
+            {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 2},
+          ]
+        }
       ],
-      formatConfig: [{
-        id: 1, pricing: 600, label: '紙圖'
-      }, {
-        id: 2, pricing: 1200, label: '實體檔案'
-      }],
     }
   },
   methods: {
     deleteItem(item) {
 
     },
-    formatGetter (id) {
-      return this.formatConfig.filter(function (format) {
-        return parseInt(format.id) === parseInt(id)
-      })[0]
+    format_date(value){
+      if (value) {
+        return moment(String(value)).format('YYYY/MM/DD')
+      }
     },
+    getItemTotal (item) {
+      // console.log(item);
+      return item.formatStatus.reduce((acc, cur) => {
+        acc += cur.quantity*cur.pricing
+        return acc
+      },0 )
+    },
+    updateQuantity (format) {
+      format.checked = !format.checked
+      if (!format.checked) format.quantity = 0
+      else format.quantity = 1
+    }
   },
   mounted () {
     this.$store.state.cartBadge = this.itemsToBuy.length
