@@ -1,14 +1,21 @@
 <template>
-  <v-card width="80%" class="mx-auto mt-10">
+  <v-card width="80%" class="mx-auto mt-5">
     <v-stepper v-model="$store.state.cartProgress">
       <v-stepper-header>
-        <v-stepper-step :complete="$store.state.cartProgress > 1" step="1">
+        <v-stepper-step 
+          step="1" 
+          :complete="$store.state.cartProgress > 1" 
+          @click="$store.state.cartProgress = 1" >
           Shopping Details
         </v-stepper-step>
 
         <v-divider></v-divider>
 
-        <v-stepper-step :complete="$store.state.cartProgress > 2" step="2">
+        <v-stepper-step 
+          step="2"
+          :complete="$store.state.cartProgress > 2"
+          @click="$store.state.cartProgress = 2"
+        >
           Payments
         </v-stepper-step>
 
