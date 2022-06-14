@@ -82,7 +82,7 @@
       ></v-pagination>
     </div>
     <v-card>
-        <v-card class="ml-auto pa-2" width="30%">
+        <v-card class="ml-auto pa-2">
           <v-card-text class="pa-0">
             <span class="subheading">圖資: {{ getCartSubtotal.toLocaleString('en-US') }}</span><br />
             <span class="subheading">運費: {{ freight }} (選擇宅配方式取件者, 實際費用另計)</span><br />

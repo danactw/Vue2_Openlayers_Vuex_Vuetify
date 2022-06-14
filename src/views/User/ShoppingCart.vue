@@ -6,7 +6,7 @@
           step="1" 
           :complete="$store.state.cartProgress > 1" 
           @click="$store.state.cartProgress = 1" >
-          Shopping Details
+          檢視明細
         </v-stepper-step>
 
         <v-divider></v-divider>
@@ -16,13 +16,13 @@
           :complete="$store.state.cartProgress > 2"
           @click="$store.state.cartProgress = 2"
         >
-          Payments
+          填寫訂單資訊
         </v-stepper-step>
 
         <v-divider></v-divider>
 
         <v-stepper-step step="3">
-          Confirm
+          付款方式
         </v-stepper-step>
       </v-stepper-header>
 
