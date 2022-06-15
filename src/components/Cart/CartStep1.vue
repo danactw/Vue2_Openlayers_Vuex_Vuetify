@@ -4,7 +4,7 @@
       height="55vh"
       v-model="selected"
       :headers="headers"
-      :items="itemsToBuy"
+      :items="$store.state.itemsToBuy"
       item-key="filename"
       :single-select="false"
       show-select
@@ -28,6 +28,8 @@
               filter
               filter-icon="mdi-checkbox-marked-circle"
               @click="updateQuantity(format)"
+              small
+              class="ma-1"
             >
             {{ format.label }}
             </v-chip>
@@ -84,9 +86,9 @@
     <v-card>
         <v-card class="ml-auto pa-2">
           <v-card-text class="pa-0">
-            <span class="subheading">圖資: {{ getCartSubtotal.toLocaleString('en-US') }}</span><br />
-            <span class="subheading">運費: {{ freight }} (選擇宅配方式取件者, 實際費用另計)</span><br />
-            <span class="title my-1"><strong>訂單金額: {{ total.toLocaleString('en-US') }}</strong></span>
+            <span class="subheading">圖資: $ {{ $store.getters.getCartSubtotal.toLocaleString('en-US') }}</span><br />
+            <span class="subheading">運費: $ {{ $store.state.freight.toLocaleString('en-US') }} (選擇宅配方式取件者, 實際費用另計)</span><br />
+            <span class="title my-1"><strong>訂單金額: {{ $store.getters.getCartTotal.toLocaleString('en-US') }}</strong></span>
           </v-card-text>
           <v-card-actions class="pa-0">
             <v-btn 
@@ -112,97 +114,23 @@ export default {
       page: 1,
       selected: [],
       headers: [
-        { text: '圖名 / 檔名', value: 'filename', width: 100, sortable: false },
-        { text: '產品類別', value: 'image', width: 120 },
-        { text: '拍攝日期', value: 'shootingdate', width: 120 },
-        { text: '含雲量', value: 'cloudrate', width: 100 },
-        { text: '輸出', value: 'formatStatus', width: 80, sortable: false },
-        { text: '數量', value: 'quantity', width: 80, sortable: false },
-        { text: '單價', value: 'pricing', width: 80, sortable: false },
-        { text: '小計', value: 'total', width: 80, sortable: false },
-        { text: '刪除', value: 'action', width: 60, sortable: false }
-      ],
-      itemsToBuy: [
-        {
-          filename: "Frozen Yogurt",
-          image: 159,
-          shootingdate: 2022/1/1,
-          cloudrate: 24,
-          formatStatus: [
-            {id:1 , pricing: 600, label: '紙圖', checked: false, quantity: 0},
-            {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 1},
-          ]
-        },
-        {
-          filename: "Eclair",
-          image: 159,
-          shootingdate: 2022/1/1,
-          cloudrate: 24,
-          formatStatus: [
-            {id:1 , pricing: 600, label: '紙圖', checked: true, quantity: 1},
-            {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 2},
-          ]
-        },
-        {
-          filename: "95204027_081128d_Yogurt",
-          image: 159,
-          shootingdate: 2022/1/1,
-          cloudrate: 24,
-          formatStatus: [
-            {id:1 , pricing: 600, label: '紙圖', checked: false, quantity: 0},
-            {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 1},
-          ]
-        },
-        {
-          filename: "95204027_081128d_27",
-          image: 159,
-          shootingdate: 2022/1/1,
-          cloudrate: 24,
-          formatStatus: [
-            {id:1 , pricing: 600, label: '紙圖', checked: true, quantity: 1},
-            {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 2},
-          ]
-        },
-        {
-          filename: "95204027_081128d_27~0126_rgb",
-          image: 159,
-          shootingdate: 2022/1/1,
-          cloudrate: 24,
-          formatStatus: [
-            {id:1 , pricing: 600, label: '紙圖', checked: false, quantity: 0},
-            {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 2},
-          ]
-        },
-        {
-          filename: "95204027_091030d_27~0107_rgb",
-          image: 159,
-          shootingdate: 2022/1/1,
-          cloudrate: 24,
-          formatStatus: [
-            {id:1 , pricing: 600, label: '紙圖', checked: true, quantity: 1},
-            {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 2},
-          ]
-        },
+        { text: '圖名 / 檔名', value: 'filename', width: '15%', sortable: false },
+        { text: '產品類別', value: 'image', width: '15%' },
+        { text: '拍攝日期', value: 'shootingdate', width: '10%' },
+        { text: '含雲量', value: 'cloudrate', width: '10%' },
+        { text: '輸出', value: 'formatStatus', width: '15%', sortable: false },
+        { text: '數量', value: 'quantity', width: '10%', sortable: false },
+        { text: '單價', value: 'pricing', width: '10%', sortable: false },
+        { text: '小計', value: 'total', width: '10%', sortable: false },
+        { text: '刪除', value: 'action', width: '5%', sortable: false }
       ],
       freight: 0
-    }
-  },
-    computed: {
-    getCartSubtotal () {
-      let subtotal = 0
-      this.itemsToBuy.forEach(item => {
-        subtotal += this.getItemTotal(item)
-      })
-      return subtotal
-    },
-    total () {
-      return this.getCartSubtotal + this.freight
     }
   },
   methods: {
     deleteItem(item) {
       if (confirm(`確定要從購物車裡刪除${item.filename}嗎？`)) {
-        this.itemsToBuy.splice(this.itemsToBuy.indexOf(item),1)
+        this.$store.state.itemsToBuy.splice(this.$store.state.itemsToBuy.indexOf(item),1)
       } else return 
     },
     format_date(value){
@@ -223,7 +151,7 @@ export default {
     },
   },
   mounted () {
-    this.$store.state.cartBadge = this.itemsToBuy.length
+    this.$store.state.cartBadge = this.$store.state.itemsToBuy.length
   }
 }
 </script>

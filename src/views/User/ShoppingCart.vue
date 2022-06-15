@@ -3,7 +3,8 @@
     <v-stepper v-model="$store.state.cartProgress">
       <v-stepper-header>
         <v-stepper-step 
-          step="1" 
+          step="1"
+          editable
           :complete="$store.state.cartProgress > 1" 
           @click="$store.state.cartProgress = 1" >
           檢視明細
@@ -13,6 +14,7 @@
 
         <v-stepper-step 
           step="2"
+          editable
           :complete="$store.state.cartProgress > 2"
           @click="$store.state.cartProgress = 2"
         >

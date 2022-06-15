@@ -1,6 +1,6 @@
 <template>
   <v-stepper-content step="2">
-    <v-form ref="orderForm" v-model="formValidity">
+    <v-form ref="orderForm" v-model="formValidity" @submit.prevent="submitForm">
       <v-row>
         <v-col>
           <v-text-field
@@ -231,6 +231,7 @@
           <v-btn 
             block
             color="primary"
+            type="submit"
             @click="$store.state.cartProgress = 3" 
             :disabled="!formValidity"
           >
@@ -255,10 +256,7 @@ export default {
         taxid: '',
         mobile: '',
         landline: '',
-        email: '',
-        deliver: '',
-        recipient: '',
-        address: ''
+        email: ''
       },
       copyTitle: null,
       demo: {
@@ -275,7 +273,7 @@ export default {
       ],
       deliverID: '1',
       storeReceiptInfo: false,
-      addressInfo: [],
+      addressInfoConfig: [],
       receiptInfo: {
         recipient: '',
         city: '',
@@ -286,21 +284,6 @@ export default {
     }
   },
   computed: {
-    form () {
-      return {
-        orderby: this.orderInfo.orderby,
-        application: this.orderInfo.application,
-        recipe: this.orderInfo.recipe,
-        contactPerson: this.orderInfo.contactPerson,
-        taxid: this.orderInfo.taxid,
-        mobile: this.orderInfo.mobile,
-        landline: this.orderInfo.landline,
-        email: this.orderInfo.email,
-        deliver: this.orderInfo.deliver,
-        recipient: this.orderInfo.recipient,
-        address: this.orderInfo.address
-      }
-    },
     emailRule () {
       return [
         v => !!v || 'E-mail 為必填欄位！',
@@ -319,12 +302,12 @@ export default {
     },
     cities() {
       const city = []
-      this.addressInfo.map(place => city.push(place.city))
+      this.addressInfoConfig.map(place => city.push(place.city))
       return city
     },
     districts() {
       const district = []
-      this.addressInfo.filter(place => {
+      this.addressInfoConfig.filter(place => {
         if(place.city===this.receiptInfo.city) {
           place.districts.forEach(place => district.push(place.name))
         }
@@ -332,7 +315,7 @@ export default {
       return district
     },
     postalCode() {
-      return this.addressInfo.filter(place => place.city===this.receiptInfo.city)[0]?.districts.filter(place => place.name === this.receiptInfo.district)[0]?.zip
+      return this.addressInfoConfig.filter(place => place.city===this.receiptInfo.city)[0]?.districts.filter(place => place.name === this.receiptInfo.district)[0]?.zip
     }
   },
   watch: {
@@ -348,7 +331,7 @@ export default {
     },
     deliverID () {
       this.$refs.orderForm.resetValidation()
-    }
+    },
   },
   methods: {
     fetchAddress() {
@@ -357,7 +340,7 @@ export default {
         .then(res => res.json())
         .then(data => {
           data.forEach(city => {
-            this.addressInfo.push({city: city.name, districts: city.districts})
+            this.addressInfoConfig.push({city: city.name, districts: city.districts})
           });
         })
     },
@@ -366,6 +349,11 @@ export default {
     },
     validateForm () {
       this.$refs.orderForm.validate()
+    },
+    submitForm () {
+      let address = `${this.receiptInfo.city} ${this.receiptInfo.district} ${this.receiptInfo.street}`
+      let deliver = this.deliverConfig[Number(this.deliverID)-1].name
+      this.$store.state.orderedInfo = { ...this.orderInfo, deliver, recipient: this.receiptInfo.recipient, postalCode: this.receiptInfo.postalCode, address}
     }
   },
   mounted() {
