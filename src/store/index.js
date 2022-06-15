@@ -93,7 +93,9 @@ export default new Vuex.Store({
     ],
     freight: 0,
     cartBadge: 0,
-    orderedInfo: {}
+    orderedInfo: {},
+    searchResults: [],
+    selectedSearchResults: []
   },
   getters: {
     getCartSubtotal (state) {

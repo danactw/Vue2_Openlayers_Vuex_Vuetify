@@ -12,7 +12,10 @@
 import AppNav from './components/NavBar/AppNav.vue';
 import NavDrawer from './components/NavBar/NavDrawer.vue';
 export default {
-    components: { AppNav, NavDrawer }
+  components: { AppNav, NavDrawer },
+  mounted () {
+    this.$store.state.cartBadge = this.$store.state.itemsToBuy.length
+  }
 }
 
 </script>

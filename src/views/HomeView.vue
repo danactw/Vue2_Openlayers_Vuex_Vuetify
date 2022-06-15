@@ -1,5 +1,6 @@
 <template>
-  <div>
+  <div id="mapContainer">
+    <SearchNotification />
     <MapControlsIcon :layerOpt="optionalLayersInfo" :layerBase="baseLayersInfo" @changeOpacity="changeOpacity" @fitTaiwan="fitTaiwan" @zoomin="zoomin" @zoomout="zoomout" />
     <div id="map" class="map" ref="mapContainer"></div>
     <div ref="mapInfoPopup" id="home">
@@ -55,9 +56,10 @@ import Feature from 'ol/Feature';
 import MapInfoPopup from '../components/MapElements/MapInfoPopup.vue'
 import MapMenuPopup from '@/components/MapElements/MapMenuPopup.vue';
 import MapControlsIcon from '@/components/MapElements/MapControlsIcon.vue';
+import SearchNotification from '../components/SearchResults/SearchNotification.vue';
 
 export default {
-  components: { MapInfoPopup, MapMenuPopup, MapControlsIcon },
+  components: { MapInfoPopup, MapMenuPopup, MapControlsIcon, SearchNotification },
   data() {
     return {
       mapContainer: null,
@@ -332,5 +334,12 @@ export default {
 }
 #home {
   position: relative;
+}
+#mapContainer {
+  position: relative;
+}
+#mapContainer .v-expansion-panels {
+  position: absolute;
+  width: 40%;
 }
 </style>

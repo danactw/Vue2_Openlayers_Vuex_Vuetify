@@ -149,9 +149,6 @@ export default {
       if (!format.checked) format.quantity = 0
       else format.quantity = 1
     },
-  },
-  mounted () {
-    this.$store.state.cartBadge = this.$store.state.itemsToBuy.length
   }
 }
 </script>
