@@ -62,7 +62,7 @@
 </template>
 
 <script>
-import SelectLayer from '@/components/SelectLayer.vue';
+import SelectLayer from '@/components/MapElements/SelectLayer.vue';
 import introJs from 'intro.js'
 import 'intro.js/introjs.css'
 export default {

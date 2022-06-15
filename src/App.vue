@@ -9,8 +9,8 @@
 </template>
 
 <script>
-import AppNav from './components/AppNav.vue';
-import NavDrawer from './components/NavDrawer.vue';
+import AppNav from './components/NavBar/AppNav.vue';
+import NavDrawer from './components/NavBar/NavDrawer.vue';
 export default {
     components: { AppNav, NavDrawer }
 }

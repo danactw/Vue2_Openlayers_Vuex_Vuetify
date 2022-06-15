@@ -52,9 +52,9 @@ import {toLonLat} from 'ol/proj';
 import {toStringXY} from 'ol/coordinate';
 import {getPointResolution} from 'ol/proj';
 import Feature from 'ol/Feature';
-import MapInfoPopup from '../components/MapInfoPopup.vue'
-import MapMenuPopup from '@/components/MapMenuPopup.vue';
-import MapControlsIcon from '@/components/MapControlsIcon.vue';
+import MapInfoPopup from '../components/MapElements/MapInfoPopup.vue'
+import MapMenuPopup from '@/components/MapElements/MapMenuPopup.vue';
+import MapControlsIcon from '@/components/MapElements/MapControlsIcon.vue';
 
 export default {
   components: { MapInfoPopup, MapMenuPopup, MapControlsIcon },
@@ -272,12 +272,14 @@ export default {
         this.optionalLayers.forEach(layer => {
           if (newValue.includes(layer.get('title'))) {
             layer.setVisible(true)
+          } else {
+            layer.setVisible(false)
             layer.setOpacity(1)
             this.optionalLayersInfo.forEach(item => {
               if (item.title===layer.get('title'))
               item.opacity = 1
             })
-          } else layer.setVisible(false)
+          }
         })
       }
     ),
