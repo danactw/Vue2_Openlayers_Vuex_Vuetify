@@ -1,14 +1,13 @@
 <template>
   <v-stepper-content step="2">
-    <v-form>
+    <v-form ref="orderForm" v-model="formValidity">
       <v-row>
         <v-col>
           <v-text-field
             ref="orderby"
             v-model="orderInfo.orderby"
             :rules="[v => !!v || '訂購（申請）人 為必填欄位！']"
-            label="訂購（申請）人"
-            placeholder="John Doe"
+            label="(必填) 訂購（申請）人"
             filled
             dense
             required
@@ -29,7 +28,7 @@
             ]"
             item-text="name"
             item-value="id"
-            label="申請目的"
+            label="(必填) 申請目的"
             outlined
             single-line
             dense
@@ -38,24 +37,28 @@
         </v-col>
       </v-row>
       <v-row>
-        <v-col>
+        <v-col cols="6">
           <v-text-field
             ref="recipe"
             v-model="orderInfo.recipe"
             :rules="[v => !!v || '收據抬頭 為必填欄位！']"
-            label="收據抬頭"
+            label="(必填) 收據抬頭"
             filled
             dense
             required
             single-line
           ></v-text-field>
         </v-col>
-        <v-col>
+        <v-col cols="3">
           <v-radio-group v-model="copyTitle" :mandatory="false" row class="mt-1">
             <v-radio label="同訂購人" value="orderby"></v-radio>
             <!-- <v-radio label="同收件人" value="recipient"></v-radio> -->
             <v-radio label="使用測試資料" value="demo"></v-radio>
           </v-radio-group>
+        </v-col>
+        <v-col cols="3" class="d-flex justify-end">
+          <v-btn class="mr-2" @click="resetForm">清除資料</v-btn>
+          <v-btn @click="validateForm">顯示必填欄位</v-btn>
         </v-col>
       </v-row>
       <v-row>
@@ -64,7 +67,7 @@
             ref="contactPerson"
             v-model="orderInfo.contactPerson"
             :rules="[v => !!v || '聯絡人 / 單位 為必填欄位！']"
-            label="聯絡人 / 單位"
+            label="(必填) 聯絡人 / 單位"
             filled
             dense
             required
@@ -75,7 +78,6 @@
           <v-text-field
             ref="taxid"
             v-model="orderInfo.taxid"
-            :rules="[v => !!v || '統一編號 為必填欄位！']"
             label="統一編號"
             filled
             dense
@@ -90,7 +92,7 @@
             ref="mobile"
             v-model="orderInfo.mobile"
             :rules="phoneRule"
-            label="聯絡電話（手機）"
+            label="(擇一) 聯絡電話-手機"
             filled
             dense
             required
@@ -102,7 +104,7 @@
             ref="landline"
             v-model="orderInfo.landline"
             :rules="phoneRule"
-            label="聯絡電話（市話）"
+            label="(擇一) 聯絡電話-市話"
             filled
             dense
             required
@@ -116,7 +118,7 @@
             ref="email"
             v-model="orderInfo.email"
             :rules="emailRule"
-            label="電子郵件 Email"
+            label="(必填) 電子郵件 Email"
             filled
             dense
             required
@@ -126,7 +128,11 @@
       </v-row>
       <v-row class="d-block" no-gutters>
         <p class="mb-0 title">取件方式</p>
-        <v-radio-group v-model="deliverID" c1lass="mt-2">      
+        <v-radio-group 
+          v-model="deliverID" 
+          c1lass="mt-2" 
+          :rules="[v => !!v || '取件方式 為必填欄位！']"
+        >      
           <v-radio
             v-for="delivertype in deliverConfig"
             :key="delivertype.id"
@@ -142,7 +148,7 @@
         </v-radio-group>
       </v-row>
       <v-row no-gutters>
-        <v-card width="100%" :disabled="deliverID==='1'">
+        <v-card width="100%" v-show="deliverID==='2'">
           <v-row no-gutters>
             <v-col>
               <v-card-title class="justify-space-between pa-0">
@@ -160,13 +166,12 @@
               <v-text-field
                 ref="recipient"
                 v-model="receiptInfo.recipient"
-                :rules="[v => !!v || '收件人 / 單位 為必填欄位！']"
+                :rules="receiptInfoRule"
                 label="收件人 / 單位"
                 filled
                 dense
                 required
                 single-line
-                hide-details
               ></v-text-field>
             </v-col>
           </v-row>
@@ -174,37 +179,36 @@
             <v-col>
               <v-select
                 v-model="receiptInfo.city"
+                :rules="receiptInfoRule"
                 :items="cities"
                 label="縣市"
                 return-object
                 filled
                 dense
                 single-line
-                hide-details
               ></v-select>
             </v-col>
             <v-col>
               <v-select
                 v-model="receiptInfo.district"
+                :rules="receiptInfoRule"
                 :items="districts"
-                label="行政區"
+                label="行政區 (請先選擇縣市)"
                 return-object
                 filled
                 dense
                 single-line
-                hide-details
               ></v-select>
             </v-col>
             <v-col>
               <v-select
                 v-model="receiptInfo.postalCode"
                 :items="[postalCode]"
-                label="郵遞區號"
+                label="郵遞區號 (選擇縣市與行政區後會自動產生)"
                 return-object
                 filled
                 dense
                 single-line
-                hide-details
               ></v-select>
             </v-col>
           </v-row>
@@ -212,9 +216,9 @@
             <v-col>
               <v-text-field
                 v-model="receiptInfo.street"
+                :rules="receiptInfoRule"
                 label="詳細地址(不接受郵政信箱)"
                 single-line
-                hide-details
                 dense
                 filled
               ></v-text-field>
@@ -228,6 +232,7 @@
             block
             color="primary"
             @click="$store.state.cartProgress = 3" 
+            :disabled="!formValidity"
           >
             [下一步] 填寫訂單資訊
           </v-btn>
@@ -241,6 +246,7 @@
 export default {
   data() {
     return {
+      formValidity: false,
       orderInfo: {
         orderby: '',
         application: '',
@@ -295,8 +301,6 @@ export default {
         address: this.orderInfo.address
       }
     },
-  },
-  computed: {
     emailRule () {
       return [
         v => !!v || 'E-mail 為必填欄位！',
@@ -305,7 +309,12 @@ export default {
     },
     phoneRule () {
       return [
-        this.orderInfo.mobile !== '' || this.orderInfo.mobile !== '' || '請至少填入一組聯絡方式！'
+        this.orderInfo.mobile !== '' || this.orderInfo.landline !== '' || '請至少填入一組聯絡方式！'
+      ]
+    },
+    receiptInfoRule () {
+      return [
+        v => this.deliverID === '1' ? true : !!v || '此欄位為必填欄位！'
       ]
     },
     cities() {
@@ -333,24 +342,15 @@ export default {
           this.orderInfo[key] = this.demo[key]
         })
       } else if (val === 'orderby') this.orderInfo.recipe = this.orderInfo.orderby
+    },
+    postalCode () {
+      this.receiptInfo.postalCode = this.postalCode
+    },
+    deliverID () {
+      this.$refs.orderForm.resetValidation()
     }
-
   },
   methods: {
-    resetForm () {
-      this.errorMessages = []
-      this.formHasErrors = false
-      Object.keys(this.form).forEach(f => {
-        this.$refs[f].reset()
-      })
-    },
-    submit () {
-      this.formHasErrors = false
-      Object.keys(this.form).forEach(f => {
-        if (!this.form[f]) this.formHasErrors = true
-        this.$refs[f].validate(true)
-      })
-    },
     fetchAddress() {
       const url = 'https://gist.githubusercontent.com/abc873693/2804e64324eaaf26515281710e1792df/raw/a1e1fc17d04b47c564bbd9dba0d59a6a325ec7c1/taiwan_districts.json'
       fetch(url)
@@ -360,6 +360,12 @@ export default {
             this.addressInfo.push({city: city.name, districts: city.districts})
           });
         })
+    },
+    resetForm () {
+      this.$refs.orderForm.reset()
+    },
+    validateForm () {
+      this.$refs.orderForm.validate()
     }
   },
   mounted() {
@@ -369,5 +375,7 @@ export default {
 </script>
 
 <style>
-
+.v-messages {
+  min-height: 0;
+}
 </style>

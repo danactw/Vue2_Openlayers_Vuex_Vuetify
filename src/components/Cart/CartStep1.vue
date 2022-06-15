@@ -92,7 +92,7 @@
             <v-btn 
               block
               color="primary"
-              class="mt-0" 
+              class="mt-2"
               @click="$store.state.cartProgress = 2" 
             >
               [下一步] 填寫訂單資訊

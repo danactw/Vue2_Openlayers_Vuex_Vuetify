@@ -99,8 +99,6 @@
 </template>
 
 <script>
-import { throws } from 'assert'
-
 export default {
   props: {
     layerBase: Array,
