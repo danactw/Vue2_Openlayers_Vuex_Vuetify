@@ -19,6 +19,7 @@
                 <v-badge
                   color="#1DD3B0"
                   :content="$store.getters.cartBadge"
+                  :dot="$store.getters.cartBadge===0"
                   overlap
                   offset-x="7"
                   ref="cartBadge"
@@ -44,9 +45,11 @@
                 </v-card-actions>
               </v-list-item-group>
               <v-list-item-group v-else>
-                <v-list-item-title class="ml-4">購物車中沒有任何影像產品
-                  <v-icon class="ml-2">mdi-image-search</v-icon>
-                </v-list-item-title>
+                <v-list-item-content>
+                  <v-list-item-title class="ml-4">購物車中沒有任何影像產品
+                    <v-icon class="ml-2">mdi-image-search</v-icon>
+                  </v-list-item-title>
+                </v-list-item-content>
               </v-list-item-group>
             </v-card>
           </v-menu>
