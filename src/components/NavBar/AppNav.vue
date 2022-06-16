@@ -1,5 +1,5 @@
 <template>
-  <v-app-bar app clipped-left height="55">
+  <v-app-bar app clipped-left height="55" id="appBar">
     <v-container>
       <v-row>
         <v-col class="pl-0" cols="4">
@@ -12,18 +12,46 @@
         <v-spacer></v-spacer>
         <v-col class="text-right" cols="6" align-self="center">
           <v-btn v-for="(link, index) in routerLinks" :key="index" :to="{ name: link.path }" rounded plain> {{ link.title }} </v-btn>
-          <v-btn :to="{ name: 'ShoppingCart' }" rounded plain color="grey darken-2">
-            <v-badge
-              color="#1DD3B0"
-              :content="$store.state.cartBadge"
-              overlap
-              offset-x="7"
-              ref="cartBadge"
-            >
-              <v-icon>mdi-cart</v-icon>
-            </v-badge>
-          </v-btn>
-          <v-menu offset-y nudge-bottom="10">
+          <!-- Shopping Cart -->
+          <v-menu open-on-hover close-delay="100" offset-y nudge-bottom="10">
+            <template v-slot:activator="{ on, attrs }">  
+              <v-btn rounded plain color="grey darken-2" v-on="on" v-bind="attrs">
+                <v-badge
+                  color="#1DD3B0"
+                  :content="$store.getters.cartBadge"
+                  overlap
+                  offset-x="7"
+                  ref="cartBadge"
+                >
+                  <v-icon>mdi-cart</v-icon>
+                </v-badge>
+              </v-btn>
+            </template>
+            <v-card width="300">
+              <v-list-item-group v-if="$store.getters.cartBadge">
+                <v-list-item
+                  v-for="item in $store.state.itemsToBuy"
+                  :key="item.filename"
+                  two-line
+                >
+                  <v-list-item-content>
+                    <v-list-item-title>{{ item.filename }}</v-list-item-title>
+                    <v-list-item-subtitle>{{ item.shootingdate }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-card-actions>
+                  <v-btn dark block :to="{name: 'ShoppingCart'}">結算付款</v-btn>
+                </v-card-actions>
+              </v-list-item-group>
+              <v-list-item-group v-else>
+                <v-list-item-title class="ml-4">購物車中沒有任何影像產品
+                  <v-icon class="ml-2">mdi-image-search</v-icon>
+                </v-list-item-title>
+              </v-list-item-group>
+            </v-card>
+          </v-menu>
+          <!-- User Account -->
+          <v-menu open-on-hover close-delay="100" offset-y nudge-bottom="10">
             <template v-slot:activator="{ on, attrs }">        
               <v-avatar size="36px" v-on="on" v-bind="attrs">
                 <v-icon color="grey darken-2">mdi-account</v-icon>
@@ -88,5 +116,9 @@ export default {
 <style>
 .v-toolbar__content {
   padding: 4px 0;
+}
+#appBar .v-list-item__action {
+  display: inline-block;
+  width: 100%;
 }
 </style>

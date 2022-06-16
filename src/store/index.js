@@ -28,16 +28,15 @@ export default new Vuex.Store({
       selectedOptionalLayers: [],
       updateRadius: 0,
     },
-    cartProgress: 1,
-    itemsToBuy: [
+    searchResults: [
       {
         filename: "Frozen Yogurt",
         image: 159,
         shootingdate: 2022/1/1,
         cloudrate: 24,
         formatStatus: [
-          {id:1 , pricing: 600, label: '紙圖', checked: false, quantity: 0},
-          {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 1},
+          {id:1 , pricing: 600, label: '紙圖', checked: null, quantity: 0},
+          {id:2 , pricing: 1200, label: '實體檔案', checked: null, quantity: 0},
         ]
       },
       {
@@ -46,8 +45,8 @@ export default new Vuex.Store({
         shootingdate: 2022/1/1,
         cloudrate: 24,
         formatStatus: [
-          {id:1 , pricing: 600, label: '紙圖', checked: true, quantity: 1},
-          {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 2},
+          {id:1 , pricing: 600, label: '紙圖', checked: null, quantity: 0},
+          {id:2 , pricing: 1200, label: '實體檔案', checked: null, quantity: 0},
         ]
       },
       {
@@ -56,8 +55,8 @@ export default new Vuex.Store({
         shootingdate: 2022/1/1,
         cloudrate: 24,
         formatStatus: [
-          {id:1 , pricing: 600, label: '紙圖', checked: false, quantity: 0},
-          {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 1},
+          {id:1 , pricing: 600, label: '紙圖', checked: null, quantity: 0},
+          {id:2 , pricing: 1200, label: '實體檔案', checked: null, quantity: 0},
         ]
       },
       {
@@ -66,8 +65,8 @@ export default new Vuex.Store({
         shootingdate: 2022/1/1,
         cloudrate: 24,
         formatStatus: [
-          {id:1 , pricing: 600, label: '紙圖', checked: true, quantity: 1},
-          {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 2},
+          {id:1 , pricing: 600, label: '紙圖', checked: null, quantity: 0},
+          {id:2 , pricing: 1200, label: '實體檔案', checked: null, quantity: 0},
         ]
       },
       {
@@ -76,8 +75,8 @@ export default new Vuex.Store({
         shootingdate: 2022/1/1,
         cloudrate: 24,
         formatStatus: [
-          {id:1 , pricing: 600, label: '紙圖', checked: false, quantity: 0},
-          {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 2},
+          {id:1 , pricing: 600, label: '紙圖', checked: null, quantity: 0},
+          {id:2 , pricing: 1200, label: '實體檔案', checked: null, quantity: 0},
         ]
       },
       {
@@ -86,16 +85,17 @@ export default new Vuex.Store({
         shootingdate: 2022/1/1,
         cloudrate: 24,
         formatStatus: [
-          {id:1 , pricing: 600, label: '紙圖', checked: true, quantity: 1},
-          {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 2},
+          {id:1 , pricing: 600, label: '紙圖', checked: null, quantity: 0},
+          {id:2 , pricing: 1200, label: '實體檔案', checked: null, quantity: 0},
         ]
       },
     ],
+    showMiniCart: false,
+    addToMiniCart: [],
+    itemsToBuy:[],
+    cartProgress: 1,
     freight: 0,
-    cartBadge: 0,
     orderedInfo: {},
-    searchResults: [],
-    selectedSearchResults: []
   },
   getters: {
     getCartSubtotal (state) {
@@ -111,6 +111,9 @@ export default new Vuex.Store({
     },
     getCartTotal (state, getters) {
       return getters.getCartSubtotal + state.freight
+    },
+    cartBadge (state) {
+      return state.itemsToBuy.length
     }
   },
   mutations: {

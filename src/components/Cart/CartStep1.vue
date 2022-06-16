@@ -3,7 +3,7 @@
     <v-data-table
       height="55vh"
       v-model="selected"
-      :headers="headers"
+      :headers="CartStep1Headers"
       :items="$store.state.itemsToBuy"
       item-key="filename"
       :single-select="false"
@@ -110,10 +110,10 @@ import moment from 'moment';
 export default {
   data () {
     return {
+      selected: [],
       pageCount: 0,
       page: 1,
-      selected: [],
-      headers: [
+      CartStep1Headers: [
         { text: '圖名 / 檔名', value: 'filename', width: '15%', sortable: false },
         { text: '產品類別', value: 'image', width: '15%' },
         { text: '拍攝日期', value: 'shootingdate', width: '10%' },

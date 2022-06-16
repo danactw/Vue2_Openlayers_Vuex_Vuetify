@@ -23,7 +23,7 @@
           <v-expansion-panel-header class="title pa-2">訂單內容一覽：影像清單</v-expansion-panel-header>
           <v-expansion-panel-content>
             <v-data-table
-              :headers="simpleHeaders"
+              :headers="cartStep3Headers"
               :items="$store.state.itemsToBuy"
               item-key="filename"
               hide-default-footer
@@ -205,7 +205,7 @@ export default {
     return {
       paymentMethod: '',
       paymentMethodConfig: ['臨櫃匯款', '臺灣銀行虛擬帳號匯款', '線上信用卡繳款'],
-      simpleHeaders: [
+      cartStep3Headers: [
         { text: '圖名 / 檔名', value: 'filename', width: '30%', sortable: false },
         { text: '產品類別', value: 'image', width: '25%' },
         { text: '輸出', value: 'formatStatus', width: '15%', sortable: false },
