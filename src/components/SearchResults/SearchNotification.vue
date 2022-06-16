@@ -8,51 +8,58 @@
         </p>
       </v-expansion-panel-header>
       <v-expansion-panel-content>
-        <v-select
-          :items="['不限雲量','小於10%']"
-          label="雲量"
-        ></v-select>
-        <v-range-slider
-          v-model="range"
-          :max="max"
-          :min="min"
-          step="1"
-          hide-details
-          class="align-center mt-4"
-          thumb-label
-        >
-          <template v-slot:prepend>
-            <span style="width: max-content">民國</span>
-            <v-text-field
-              v-model="startYear"
-              class="mt-0 pt-0"
-              :max="max"
-              :min="min"
-              hide-details
-              single-line
-              type="number"
-              style="width: 45px"
-              @change="$set(range, 0, $event)"
-            ></v-text-field>
-            <span>年</span>
-          </template>
-          <template v-slot:append>
-            <span style="width: max-content">民國</span>
-            <v-text-field
-              v-model="endYear"
-              class="mt-0 pt-0"
-              hide-details
-              :max="max"
-              :min="min"
-              single-line
-              type="number"
-              style="width: 60px"
-              @change="$set(range, 1, $event)"
-            ></v-text-field>
-            <span>年</span>
-          </template>
-        </v-range-slider>
-        <v-divider class="mt-4"></v-divider>
+        <div class="d-flex">
+          <v-select
+            style="width: 25%; padding-top: 12px;"
+            :items="['不限雲量','小於10%']"
+            label="雲量"
+            dense
+            rounded
+            outlined
+            flat
+            solo
+            hide-details
+          ></v-select>
+          <v-spacer></v-spacer>
+          <v-range-slider
+            style="width: 60%"
+            v-model="range"
+            :max="max"
+            :min="min"
+            step="1"
+            hide-details
+            class="align-center flex-column"
+          >
+            <template v-slot:prepend>
+              <div class="d-flex justify-center align-center" style="width:100%">
+                <span> 拍攝年份：民國</span>
+                <v-text-field
+                  v-model="startYear"
+                  class="mt-0 pt-0"
+                  :max="max"
+                  :min="min"
+                  hide-details
+                  single-line
+                  type="number"
+                  @change="$set(range, 0, $event)"
+                ></v-text-field>
+                <span>年至民國</span>
+                <v-text-field
+                  v-model="endYear"
+                  class="mt-0 pt-0"
+                  hide-details
+                  :max="max"
+                  :min="min"
+                  single-line
+                  type="number"
+                  @change="$set(range, 1, $event)"
+                ></v-text-field>
+                <span>年</span>
+              </div>
+            </template>
+          </v-range-slider>
+        </div>
+        <v-divider class="mt-2"></v-divider>
         <ResutlsTableVue />
         <v-bottom-navigation horizontal absolute>
           <v-btn color="primary" text @click="$store.state.searchResults=[]">
@@ -84,8 +91,8 @@ export default {
       open: true,
       min: 67,
       max: 108,
-      startYear: 80,
-      endYear: 100,
+      startYear: 67,
+      endYear: 108,
     };
   },
   computed: {
@@ -103,14 +110,13 @@ export default {
 </script>
 
 <style>
-.v-input__append-outer,
-.v-input__prepend-outer {
-  align-items: center;
-}
 #searchNotification .v-text-field input {
   text-align: center;
 }
 #searchNotification .v-item-group.v-bottom-navigation--absolute {
   bottom: -8%;
+}
+#searchNotification .v-input__prepend-outer {
+  width: 100%;
 }
 </style>
