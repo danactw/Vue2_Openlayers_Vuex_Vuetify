@@ -42,17 +42,18 @@
 import 'ol/ol.css';
 import Map from 'ol/Map';
 import View from 'ol/View';
-import { Tile as TileLayer, Vector as VectorLayer, Graticule } from 'ol/layer';
 import LayerGroup from 'ol/layer/Group';
-import { OSM, XYZ, Stamen, TileDebug, TileArcGISRest, TileWMS, Vector as VectorSource } from 'ol/source';
+import { Tile as TileLayer, Vector as VectorLayer, Graticule } from 'ol/layer';
+import { OSM, Stamen, TileDebug, TileArcGISRest, TileWMS, Vector as VectorSource, Cluster } from 'ol/source';
+import { Circle as CircleStyle, Fill, Stroke, Style, Text} from 'ol/style';
 import { defaults, ScaleLine } from 'ol/control';
 import Overlay from 'ol/Overlay';
-import Circle from 'ol/geom/Circle';
-import {Circle as CircleStyle, Fill, Stroke, Style} from 'ol/style';
-import {toLonLat} from 'ol/proj';
-import {toStringXY} from 'ol/coordinate';
-import {getPointResolution} from 'ol/proj';
 import Feature from 'ol/Feature';
+import { Circle, Point } from 'ol/geom';
+import { toLonLat } from 'ol/proj';
+import { toStringXY } from 'ol/coordinate';
+import { getPointResolution } from 'ol/proj';
+import { containsExtent } from 'ol/extent';
 import MapInfoPopup from '../components/MapElements/MapInfoPopup.vue'
 import MapMenuPopup from '@/components/MapElements/MapMenuPopup.vue';
 import MapControlsIcon from '@/components/MapElements/MapControlsIcon.vue';
@@ -76,7 +77,9 @@ export default {
       feature: null,
       radius: null,
       snackbarText: '地理屬性標記已清除！',
-      snackbar: false
+      snackbar: false,
+      clusters: null,
+      clusterFeatures: []
     }
   },
   methods: {
@@ -192,8 +195,51 @@ export default {
           }),
         }),
       })
+      // cluster map
+      const count = 200;
+      this.clusterFeatures = new Array(count);
+      const e = 4500000;
+      for (let i = 0; i < count; ++i) {
+        const coordinates = [e * Math.random() / 2 + 2.8 * e, e * Math.random() / 2 + 0.3 * e];
+        this.clusterFeatures[i] = new Feature(new Point(coordinates));
+      }
+      const clusterSource = new Cluster({
+        source: new VectorSource({
+          features: this.clusterFeatures,
+        }),
+      });
+      const styleCache = {};
+      this.clusters = new VectorLayer({
+        source: clusterSource,
+        style: function (feature) {
+          const size = feature.get('features').length;
+          let style = styleCache[size];
+          if (!style) {
+            style = new Style({
+              image: new CircleStyle({
+                radius: 10,
+                stroke: new Stroke({
+                  color: '#fff',
+                }),
+                fill: new Fill({
+                  color: '#3399CC',
+                }),
+              }),
+              text: new Text({
+                text: size.toString(),
+                fill: new Fill({
+                  color: '#fff',
+                }),
+              }),
+            });
+            styleCache[size] = style;
+          }
+          return style;
+        },
+      });
+
       this.map = new Map({
-        layers: [ baseLayerGroup, optionalLayerGroup, this.vector ],
+        layers: [ baseLayerGroup, optionalLayerGroup, this.clusters, this.vector ],
         target: 'map',
         view: new View({
           center: [13471657.33321689, 2725618.3248579176],
@@ -243,6 +289,9 @@ export default {
         geometry: new Circle(e.coordinate,50*1000/getPointResolution('EPSG:3857', 1, e.coordinate))
       })
       this.vector.getSource().addFeature(this.circleFeature)
+      this.clusterFeatures.forEach(feature => {
+        console.log(containsExtent(this.circleFeature.getGeometry().getExtent(), feature.getGeometry().getExtent() ))
+      })
     })
     this.map.on('pointermove', e => {
       this.mousePosition = toStringXY(toLonLat(e.coordinate),2)
@@ -340,6 +389,6 @@ export default {
 }
 #mapContainer .v-expansion-panels {
   position: absolute;
-  width: 40%;
+  width: 30%;
 }
 </style>
