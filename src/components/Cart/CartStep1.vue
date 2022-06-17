@@ -4,7 +4,7 @@
       height="55vh"
       v-model="selected"
       :headers="CartStep1Headers"
-      :items="$store.state.itemsToBuy"
+      :items="$store.state.itemsInCart"
       item-key="filename"
       :single-select="false"
       show-select
@@ -14,6 +14,14 @@
       hide-default-footer
       @page-count="pageCount = $event"
     >
+      <template v-slot:[`item.filename`]="{ item }">
+        {{ item.filename }}
+      </template>
+      <template v-slot:[`item.image`]="{ item }">
+        <div class="imgContainer" style="width: 100%; height: 0; padding-bottom: 100%; position: relative">
+          <img :src="item.image" style="width: 100%; height: 100%; position: absolute; object-fit: cover">
+        </div>
+      </template>
       <template v-slot:[`item.shootingdate`]="{ item }">
         {{ format_date(item.shootingdate) }}
       </template>
@@ -130,7 +138,7 @@ export default {
   methods: {
     deleteItem(item) {
       if (confirm(`確定要從購物車裡刪除${item.filename}嗎？`)) {
-        this.$store.state.itemsToBuy.splice(this.$store.state.itemsToBuy.indexOf(item),1)
+        this.$store.state.itemsInCart.splice(this.$store.state.itemsInCart.indexOf(item),1)
       } else return 
     },
     format_date(value){
@@ -147,7 +155,10 @@ export default {
     updateQuantity (format) {
       format.checked = !format.checked
       if (!format.checked) format.quantity = 0
-      else format.quantity = 1
+      else {
+        format.quantity = 1
+        format.checked = format.label
+      }
     },
   }
 }

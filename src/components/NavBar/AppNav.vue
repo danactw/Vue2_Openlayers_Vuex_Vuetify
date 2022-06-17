@@ -31,7 +31,7 @@
             <v-card width="300">
               <v-list-item-group v-if="$store.getters.cartBadge">
                 <v-list-item
-                  v-for="item in $store.state.itemsToBuy"
+                  v-for="item in $store.state.itemsInCart"
                   :key="item.filename"
                   two-line
                 >

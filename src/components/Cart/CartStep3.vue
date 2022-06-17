@@ -24,7 +24,7 @@
           <v-expansion-panel-content>
             <v-data-table
               :headers="cartStep3Headers"
-              :items="$store.state.itemsToBuy"
+              :items="$store.state.itemsInCart"
               item-key="filename"
               hide-default-footer
               fixed-header
@@ -211,38 +211,6 @@ export default {
         { text: '輸出', value: 'formatStatus', width: '15%', sortable: false },
         { text: '數量', value: 'quantity', width: '15%', sortable: false },
         { text: '小計', value: 'total', width: '15%', sortable: false },
-      ],
-      itemsToBuy: [
-        {
-          filename: "Frozen Yogurt",
-          image: 159,
-          shootingdate: 2022/1/1,
-          cloudrate: 24,
-          formatStatus: [
-            {id:1 , pricing: 600, label: '紙圖', checked: false, quantity: 0},
-            {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 1},
-          ]
-        },
-        {
-          filename: "Eclair",
-          image: 159,
-          shootingdate: 2022/1/1,
-          cloudrate: 24,
-          formatStatus: [
-            {id:1 , pricing: 600, label: '紙圖', checked: true, quantity: 1},
-            {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 2},
-          ]
-        },
-        {
-          filename: "95204027_081128d_Yogurt",
-          image: 159,
-          shootingdate: 2022/1/1,
-          cloudrate: 24,
-          formatStatus: [
-            {id:1 , pricing: 600, label: '紙圖', checked: false, quantity: 0},
-            {id:2 , pricing: 1200, label: '實體檔案', checked: true, quantity: 1},
-          ]
-        }
       ],
       showBankInfo: false,
       comment: '',

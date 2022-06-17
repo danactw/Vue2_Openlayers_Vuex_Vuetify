@@ -5,7 +5,7 @@
     >
       <v-card>
         <v-card-title class="text-h5">
-          選擇影像的輸出方式 ({{ $store.state.addToMiniCart.length }})
+          選擇影像的輸出方式 ({{ $store.state.itemsInMiniCart.length }})
         </v-card-title>
         <v-card-subtitle>
           線上購圖製作期程約5個工作日，大量申購圖資(正射影像紙圖50幅以上或檔案100幅以上)視申購狀況調整期程。
@@ -15,7 +15,7 @@
           <v-data-table
             id="miniCart"
             :headers="miniCartHeaders"
-            :items="$store.state.addToMiniCart"
+            :items="$store.state.itemsInMiniCart"
             item-key="filename"
             class="elevation-0"
             hide-default-footer
@@ -138,21 +138,21 @@ export default {
   },
   methods: {
     addToCart () {
-      this.$store.state.addToMiniCart.forEach(item => {
-        // 檢查是否有已經在itemsToBuy的item
+      this.$store.state.itemsInMiniCart.forEach(item => {
+        // 檢查是否有itemsInMiniCart都沒有選輸出方式的item
+        if (item.formatStatus[0].checked === null && item.formatStatus[1].checked === null) {
+          this.$store.state.itemsInMiniCart.splice(this.$store.state.itemsInMiniCart.indexOf(item),1)
+        }
+        // 檢查是否有已經在itemsInCart的item
         let index = 0
-        this.$store.state.itemsToBuy.forEach(itemToBuy => {
+        this.$store.state.itemsInCart.forEach(itemToBuy => {
           index++
           if (Object.values(itemToBuy).indexOf(item.filename)!= -1) return
         })
-        this.$store.state.itemsToBuy.splice((index-1),1)
-        // 檢查是否有addToMiniCart都沒有選輸出方式的item
-        if (item.formatStatus[0].checked === null && item.formatStatus[1].checked === null) {
-          this.$store.state.addToMiniCart.splice(this.$store.state.addToMiniCart.indexOf(item),1)
-        }
+        this.$store.state.itemsInCart.splice((index-1),1)
       })
-      this.$store.state.itemsToBuy.push(...this.$store.state.addToMiniCart)
-      this.$store.state.addToMiniCart = []
+      this.$store.state.itemsInCart.push(...this.$store.state.itemsInMiniCart)
+      this.$store.state.itemsInMiniCart = []
       this.$store.state.showMiniCart = false
     },
     updateFormat (format) {
@@ -164,7 +164,7 @@ export default {
     },
     deleteItem(item) {
       if (confirm(`確定要從新增清單裡刪除${item.filename}嗎？`)) {
-        this.$store.state.addToMiniCart.splice(this.$store.state.addToMiniCart.indexOf(item),1)
+        this.$store.state.itemsInMiniCart.splice(this.$store.state.itemsInMiniCart.indexOf(item),1)
       } else return 
     },
   }

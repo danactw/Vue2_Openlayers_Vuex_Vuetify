@@ -1,6 +1,6 @@
 <template>
   <div id="mapContainer">
-    <SearchNotification />
+    <SearchNotification @clearSearch="clearSearch" />
     <MapControlsIcon :layerOpt="optionalLayersInfo" :layerBase="baseLayersInfo" @changeOpacity="changeOpacity" @fitTaiwan="fitTaiwan" @zoomin="zoomin" @zoomout="zoomout" />
     <div id="map" class="map" ref="mapContainer"></div>
     <div ref="mapInfoPopup" id="home">
@@ -197,11 +197,11 @@ export default {
         }),
       })
       // cluster map
-      const count = 200;
+      const count = 2000;
       this.clusterFeatures = new Array(count);
       const e = 4500000;
       for (let i = 0; i < count; ++i) {
-        const coordinates = [e * Math.random() / 2 + 2.8 * e, e * Math.random() / 2 + 0.3 * e];
+        const coordinates = [2 * e * Math.random() + 2 * e, e * Math.random() + 0.2 * e];
         this.clusterFeatures[i] = new Feature(new Point(coordinates));
       }
 
@@ -231,7 +231,7 @@ export default {
     fitTaiwan() {
       this.map.getView().fit([13003979.213346737, 2448310.2757384996, 14032671.756348401, 2979709.662656437])
     },
-    showClusters (features) {
+    addClusterStyle (features) {
       const clusterSource = new Cluster({
         source: new VectorSource({
           features: features
@@ -267,27 +267,55 @@ export default {
         },
       });
     },
-    resetInfos (e) {
+    showInfo (e) {
       this.vector.getSource().clear()
       this.$store.state.showInfo = true
       this.$store.state.showMenu = false
       this.map.addOverlay(this.mapInfoOverlay)
       this.mapInfoOverlay.setPosition(e.coordinate)
-      this.$store.state.clickedPositionX = this.map.getSize()[0]/2
-      this.$store.state.clickedPositionY = this.map.getSize()[1]/2
       this.circleFeature = new Feature({
-        geometry: new Circle(e.coordinate,500*1000/getPointResolution('EPSG:3857', 1, e.coordinate))
+        geometry: new Circle(this.$store.state.clickedCoordinate, 200*1000/getPointResolution('EPSG:3857', 1, this.$store.state.clickedCoordinate))
       })
       this.vector.getSource().addFeature(this.circleFeature)
     },
-    resetClusterFeatures () {
+    showMenu () {
+      this.$store.state.showInfo = false
+      this.$store.state.clickedPositionX = this.map.getSize()[0]/2
+      this.$store.state.clickedPositionY = this.map.getSize()[1]/2
+    },
+    clearClusterFeatures () {
       this.cachesClusterFeatures = []
       this.map.removeLayer(this.clusters)
+    },
+    showClusterFeatures () {
+      this.clearClusterFeatures()
       this.clusterFeatures.forEach(feature => {
-        if (containsExtent(this.circleFeature.getGeometry().getExtent(), feature.getGeometry().getExtent())) this.cachesClusterFeatures.push(feature)
+        if (containsExtent(this.circleFeature.getGeometry().getExtent(), feature.getGeometry().getExtent())) {
+          this.cachesClusterFeatures.push(feature)
+          this.addSearchResults(feature)
+        }
       })
-      this.showClusters(this.cachesClusterFeatures)
+      this.addClusterStyle(this.cachesClusterFeatures)
       this.map.addLayer(this.clusters)
+    },
+    addSearchResults (feature) {
+      let featureInfo = {
+        filename: toStringXY(feature.getGeometry().flatCoordinates,2),
+        image: 'https://fakeimg.pl/300x200/200',
+        shootingdate: 2022/1/1,
+        cloudrate: '24%',
+        formatStatus: [
+          {id:1 , pricing: 600, label: '紙圖', checked: null, quantity: 0},
+          {id:2 , pricing: 1200, label: '實體檔案', checked: null, quantity: 0},
+        ]
+      }
+      this.$store.state.searchResults.push(featureInfo)
+    },
+    clearSearch () {
+      this.$store.state.searchResults = []
+      this.clearClusterFeatures()
+      this.$store.state.searchExpend = []
+      this.$store.state.search = false
     }
   },
   mounted() {
@@ -298,10 +326,9 @@ export default {
       offset: [-45,0]
     })
     this.map.on('click', (e) => {
-      this.$store.state.clickedCoordinateX = e.coordinate[0]
-      this.$store.state.clickedCoordinateY = e.coordinate[1]
-      this.resetInfos(e)
-      this.resetClusterFeatures()
+      this.$store.state.clickedCoordinate = e.coordinate
+      this.showInfo(e)
+      this.clearSearch()
     })
     this.map.on('pointermove', e => {
       this.mousePosition = toStringXY(toLonLat(e.coordinate),2)
@@ -311,9 +338,10 @@ export default {
     this.$store.watch(
       state => state.showMenu,
       (newValue,oldValue) => {
-        const X = this.$store.state.clickedCoordinateX
-        const Y = this.$store.state.clickedCoordinateY
-        if (newValue===true) this.map.getView().setCenter([X, Y])
+        if (newValue===true) {
+          this.map.getView().setCenter(this.$store.state.clickedCoordinate)
+          this.showMenu()
+        }
       }
     ),
     // switch Base Layer
@@ -369,16 +397,24 @@ export default {
         }
         const center = this.circleFeature.getGeometry().getCenter()
         this.circleFeature.getGeometry().setRadius(this.radius*1000/getPointResolution('EPSG:3857', 1, center))
-        this.resetClusterFeatures()
       }
     ),
     this.$store.watch(
       state => state.showMenu,
       (newValue, oldValue) => {
-        if (newValue===false) {
+        if (!newValue) {
           this.vector.getSource().clear()
-          this.$store.state.homeMap.updateRadius = 0
+          this.$store.state.homeMap.updateRadius = 2
           this.snackbar = true
+        }
+      }
+    ),
+    this.$store.watch(
+      state => state.search,
+      (newValue, oldValue) => {
+        if (newValue) {
+          this.showClusterFeatures()
+          this.$store.state.showMenu = false
         }
       }
     )
@@ -400,6 +436,7 @@ export default {
 }
 #mapContainer .v-expansion-panels {
   position: absolute;
-  width: 30%;
+  /* width: 30%; */
+  width: 550px;
 }
 </style>

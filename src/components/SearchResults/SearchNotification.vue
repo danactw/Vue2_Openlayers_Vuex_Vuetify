@@ -1,10 +1,10 @@
 <template>
-  <v-expansion-panels id="searchNotification">
+  <v-expansion-panels id="searchNotification" v-model="$store.state.searchExpend">
     <v-expansion-panel>
       <v-expansion-panel-header>
         <p class="mb-0">
-          共找到了 <span style="color:#C62828;">{{ $store.state.searchResults.length }}</span> 筆影像檔案<span v-if="open">，已選取 <span style="color:#C62828;">{{ $store.state.addToMiniCart.length }}</span> 筆。</span><br>
-          <span class="d-inline-block mt-1">@ {{ $store.state.clickedCoordinateX}} , {{ $store.state.clickedCoordinateY }}</span>
+          共找到了 <span style="color:#C62828;">{{ $store.state.searchResults.length }}</span> 筆影像檔案<span v-if="open">，已選取 <span style="color:#C62828;">{{ $store.state.itemsInMiniCart.length }}</span> 筆。</span><br>
+          <span class="d-inline-block mt-1">@ {{ $store.state.clickedCoordinate }}</span>
         </p>
       </v-expansion-panel-header>
       <v-expansion-panel-content>
@@ -62,7 +62,7 @@
         <v-divider class="mt-2"></v-divider>
         <ResutlsTableVue />
         <v-bottom-navigation horizontal absolute>
-          <v-btn color="primary" text @click="$store.state.searchResults=[]">
+          <v-btn color="primary" text @click="$emit('clearSearch')">
             <span color="primary">清除搜尋</span>
             <v-icon>mdi-restart</v-icon>
           </v-btn>
@@ -86,6 +86,7 @@
 import ResutlsTableVue from './ResutlsTable.vue'
 import MiniCartVue from '../Cart/MiniCart.vue';
 export default {
+  components: { ResutlsTableVue, MiniCartVue },
   data() {
     return {
       open: true,
@@ -104,8 +105,7 @@ export default {
         [this.startYear, this.endYear] = value;
       }
     }
-  },
-  components: { ResutlsTableVue, MiniCartVue }
+  }
 }
 </script>
 
@@ -114,7 +114,7 @@ export default {
   text-align: center;
 }
 #searchNotification .v-item-group.v-bottom-navigation--absolute {
-  bottom: -8%;
+  bottom: -7%;
 }
 #searchNotification .v-input__prepend-outer {
   width: 100%;

@@ -15,7 +15,7 @@
           <v-list-item-content>
             <v-list-item-title>City & District</v-list-item-title>
             <v-list-item-subtitle>
-              {{$store.state.clickedCoordinateX}}, {{$store.state.clickedCoordinateY}}
+              {{ $store.state.clickedCoordinate }}
             </v-list-item-subtitle>
           </v-list-item-content>
           <v-list-item-action class="ma-0 pa-0">
@@ -124,7 +124,7 @@
       <v-card-actions class="mt-0 pt-0">
         <v-spacer></v-spacer>
         <v-btn text @click="$store.state.showMenu=false">關閉</v-btn>
-        <v-btn :disabled="selected.length===0" color="primary" text >找影像</v-btn>
+        <v-btn :disabled="selected.length===0" color="primary" text @click="$store.state.search=true">找影像</v-btn>
       </v-card-actions>
     </v-card>
   </v-menu>

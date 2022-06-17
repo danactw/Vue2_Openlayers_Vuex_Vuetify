@@ -66,7 +66,7 @@
       <v-list-item dark class="pa-0 ma-0">
         <v-list-item-content class="pa-0 ma-0">
           <v-list-item-title>City & District</v-list-item-title>
-          <v-list-item-title> {{$store.state.clickedCoordinateX}}, {{$store.state.clickedCoordinateY}}</v-list-item-title>
+          <v-list-item-title> {{ $store.state.clickedCoordinate }} </v-list-item-title>
         </v-list-item-content>
         <v-list-item-action>
           <v-btn

@@ -1,7 +1,7 @@
 <template>
   <v-data-table
     id="resultsTable"
-    v-model="$store.state.addToMiniCart"
+    v-model="$store.state.itemsInMiniCart"
     :headers="searchResultsHeader"
     :items="$store.state.searchResults"
     item-key="filename"
@@ -18,11 +18,14 @@
         <v-btn plain @click="expanded=[]">全部收合</v-btn>
       </v-toolbar>
     </template>
+    <template v-slot:[`item.filename`]="{ item }">
+      {{ item.filename }}
+    </template>
     <template v-slot:expanded-item="{ headers, item }">
       <td :colspan="headers.length">
         <div class="box d-flex">
           <div class="imgContainer" style="width: 40%; height: 0; padding-bottom: 40%; position: relative">
-            <img src="https://fakeimg.pl/300x200/200" style="width: 100%; height: 100%; position: absolute; object-fit: cover">
+            <img :src="item.image" style="width: 100%; height: 100%; position: absolute; object-fit: cover">
           </div>
           <div class="textContainer pa-4" style="width: 60%">
             <h4>{{ item.filename }}</h4>
@@ -89,5 +92,10 @@ export default {
 
 #resultsTable {
   margin: 0 -8px;
+}
+
+#resultsTable .v-data-table__wrapper {
+  max-height: 500px;
+  overflow: scroll;
 }
 </style>

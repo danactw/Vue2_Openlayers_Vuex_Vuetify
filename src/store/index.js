@@ -18,89 +18,29 @@ export default new Vuex.Store({
     },
     showNavDrawer: false,
     showInfo: false,
-    clickedCoordinateX: 0,
-    clickedCoordinateY: 0,
+    clickedCoordinate: null,
     clickedPositionX: 0,
     clickedPositionY: 0,
     showMenu: false,
     homeMap: {
       currentBaseLayer: 'OSM Standard',
       selectedOptionalLayers: [],
-      updateRadius: 0,
+      updateRadius: 2,
     },
-    searchResults: [
-      {
-        filename: "Frozen Yogurt",
-        image: 159,
-        shootingdate: 2022/1/1,
-        cloudrate: 24,
-        formatStatus: [
-          {id:1 , pricing: 600, label: '紙圖', checked: null, quantity: 0},
-          {id:2 , pricing: 1200, label: '實體檔案', checked: null, quantity: 0},
-        ]
-      },
-      {
-        filename: "Eclair",
-        image: 159,
-        shootingdate: 2022/1/1,
-        cloudrate: 24,
-        formatStatus: [
-          {id:1 , pricing: 600, label: '紙圖', checked: null, quantity: 0},
-          {id:2 , pricing: 1200, label: '實體檔案', checked: null, quantity: 0},
-        ]
-      },
-      {
-        filename: "95204027_081128d_Yogurt",
-        image: 159,
-        shootingdate: 2022/1/1,
-        cloudrate: 24,
-        formatStatus: [
-          {id:1 , pricing: 600, label: '紙圖', checked: null, quantity: 0},
-          {id:2 , pricing: 1200, label: '實體檔案', checked: null, quantity: 0},
-        ]
-      },
-      {
-        filename: "95204027_081128d_27",
-        image: 159,
-        shootingdate: 2022/1/1,
-        cloudrate: 24,
-        formatStatus: [
-          {id:1 , pricing: 600, label: '紙圖', checked: null, quantity: 0},
-          {id:2 , pricing: 1200, label: '實體檔案', checked: null, quantity: 0},
-        ]
-      },
-      {
-        filename: "95204027_081128d_27~0126_rgb",
-        image: 159,
-        shootingdate: 2022/1/1,
-        cloudrate: 24,
-        formatStatus: [
-          {id:1 , pricing: 600, label: '紙圖', checked: null, quantity: 0},
-          {id:2 , pricing: 1200, label: '實體檔案', checked: null, quantity: 0},
-        ]
-      },
-      {
-        filename: "95204027_091030d_27~0107_rgb",
-        image: 159,
-        shootingdate: 2022/1/1,
-        cloudrate: 24,
-        formatStatus: [
-          {id:1 , pricing: 600, label: '紙圖', checked: null, quantity: 0},
-          {id:2 , pricing: 1200, label: '實體檔案', checked: null, quantity: 0},
-        ]
-      },
-    ],
+    search: false,
+    searchExpend: [],
+    searchResults: [],
     showMiniCart: false,
-    addToMiniCart: [],
-    itemsToBuy:[],
+    itemsInMiniCart: [],
     cartProgress: 1,
-    freight: 0,
+    itemsInCart:[],
     orderedInfo: {},
+    freight: 0,
   },
   getters: {
     getCartSubtotal (state) {
       let subtotal = 0
-      state.itemsToBuy.forEach(item => {
+      state.itemsInCart.forEach(item => {
         let itemTotal = item.formatStatus.reduce((acc, cur) => {
           acc += cur.quantity*cur.pricing
           return acc
@@ -113,7 +53,7 @@ export default new Vuex.Store({
       return getters.getCartSubtotal + state.freight
     },
     cartBadge (state) {
-      return state.itemsToBuy.length
+      return state.itemsInCart.length
     }
   },
   mutations: {
