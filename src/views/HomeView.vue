@@ -79,7 +79,8 @@ export default {
       snackbarText: '地理屬性標記已清除！',
       snackbar: false,
       clusters: null,
-      clusterFeatures: []
+      clusterFeatures: [],
+      cachesClusterFeatures: []
     }
   },
   methods: {
@@ -203,9 +204,37 @@ export default {
         const coordinates = [e * Math.random() / 2 + 2.8 * e, e * Math.random() / 2 + 0.3 * e];
         this.clusterFeatures[i] = new Feature(new Point(coordinates));
       }
+
+      this.map = new Map({
+        layers: [ baseLayerGroup, optionalLayerGroup, this.vector ],
+        target: 'map',
+        view: new View({
+          center: [13471657.33321689, 2725618.3248579176],
+          zoom: 6,
+        }),
+        controls: defaults({zoom: false}).extend([scaleLine])
+      })
+    },
+    changeOpacity(info) {
+      this.optionalLayers.forEach( layer => {
+        if (info.layerTitle === layer.get('title')) {
+          layer.setOpacity(Number(info.layerOpacity))
+        }
+      })
+    },
+    zoomin() {
+      this.map.getView().setZoom(this.map.getView().getZoom()+1)
+    },
+    zoomout() {
+      this.map.getView().setZoom(this.map.getView().getZoom()-1)
+    },
+    fitTaiwan() {
+      this.map.getView().fit([13003979.213346737, 2448310.2757384996, 14032671.756348401, 2979709.662656437])
+    },
+    showClusters (features) {
       const clusterSource = new Cluster({
         source: new VectorSource({
-          features: this.clusterFeatures,
+          features: features
         }),
       });
       const styleCache = {};
@@ -237,36 +266,29 @@ export default {
           return style;
         },
       });
-
-      this.map = new Map({
-        layers: [ baseLayerGroup, optionalLayerGroup, this.clusters, this.vector ],
-        target: 'map',
-        view: new View({
-          center: [13471657.33321689, 2725618.3248579176],
-          zoom: 6,
-        }),
-        controls: defaults({zoom: false}).extend([scaleLine])
+    },
+    resetInfos (e) {
+      this.vector.getSource().clear()
+      this.$store.state.showInfo = true
+      this.$store.state.showMenu = false
+      this.map.addOverlay(this.mapInfoOverlay)
+      this.mapInfoOverlay.setPosition(e.coordinate)
+      this.$store.state.clickedPositionX = this.map.getSize()[0]/2
+      this.$store.state.clickedPositionY = this.map.getSize()[1]/2
+      this.circleFeature = new Feature({
+        geometry: new Circle(e.coordinate,500*1000/getPointResolution('EPSG:3857', 1, e.coordinate))
       })
-      // this.map.addControl(new Attribution({
-      //   collapsible: true
-      // }))
+      this.vector.getSource().addFeature(this.circleFeature)
     },
-    changeOpacity(info) {
-      this.optionalLayers.forEach( layer => {
-        if (info.layerTitle === layer.get('title')) {
-          layer.setOpacity(Number(info.layerOpacity))
-        }
+    resetClusterFeatures () {
+      this.cachesClusterFeatures = []
+      this.map.removeLayer(this.clusters)
+      this.clusterFeatures.forEach(feature => {
+        if (containsExtent(this.circleFeature.getGeometry().getExtent(), feature.getGeometry().getExtent())) this.cachesClusterFeatures.push(feature)
       })
-    },
-    zoomin() {
-      this.map.getView().setZoom(this.map.getView().getZoom()+1)
-    },
-    zoomout() {
-      this.map.getView().setZoom(this.map.getView().getZoom()-1)
-    },
-    fitTaiwan() {
-      this.map.getView().fit([13003979.213346737, 2448310.2757384996, 14032671.756348401, 2979709.662656437])
-    },
+      this.showClusters(this.cachesClusterFeatures)
+      this.map.addLayer(this.clusters)
+    }
   },
   mounted() {
     this.initMap()
@@ -276,22 +298,10 @@ export default {
       offset: [-45,0]
     })
     this.map.on('click', (e) => {
-      this.vector.getSource().clear()
-      this.$store.state.showInfo = true
-      this.$store.state.showMenu = false
-      this.map.addOverlay(this.mapInfoOverlay)
-      this.mapInfoOverlay.setPosition(e.coordinate)
       this.$store.state.clickedCoordinateX = e.coordinate[0]
       this.$store.state.clickedCoordinateY = e.coordinate[1]
-      this.$store.state.clickedPositionX = this.map.getSize()[0]/2
-      this.$store.state.clickedPositionY = this.map.getSize()[1]/2
-      this.circleFeature = new Feature({
-        geometry: new Circle(e.coordinate,50*1000/getPointResolution('EPSG:3857', 1, e.coordinate))
-      })
-      this.vector.getSource().addFeature(this.circleFeature)
-      this.clusterFeatures.forEach(feature => {
-        console.log(containsExtent(this.circleFeature.getGeometry().getExtent(), feature.getGeometry().getExtent() ))
-      })
+      this.resetInfos(e)
+      this.resetClusterFeatures()
     })
     this.map.on('pointermove', e => {
       this.mousePosition = toStringXY(toLonLat(e.coordinate),2)
@@ -359,6 +369,7 @@ export default {
         }
         const center = this.circleFeature.getGeometry().getCenter()
         this.circleFeature.getGeometry().setRadius(this.radius*1000/getPointResolution('EPSG:3857', 1, center))
+        this.resetClusterFeatures()
       }
     ),
     this.$store.watch(
