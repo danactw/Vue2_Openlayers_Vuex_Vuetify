@@ -116,7 +116,7 @@ export default {
   text-align: center;
 }
 #searchNotification .v-item-group.v-bottom-navigation--absolute {
-  bottom: -7%;
+  bottom: -50px;
 }
 #searchNotification .v-input__prepend-outer {
   width: 100%;

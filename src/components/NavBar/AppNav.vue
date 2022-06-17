@@ -15,7 +15,14 @@
           <!-- Shopping Cart -->
           <v-menu open-on-hover close-delay="100" offset-y nudge-bottom="10">
             <template v-slot:activator="{ on, attrs }">  
-              <v-btn rounded plain color="grey darken-2" v-on="on" v-bind="attrs">
+              <v-btn 
+                rounded 
+                plain 
+                v-on="on" 
+                v-bind="attrs"
+                color="grey darken-2" 
+                :to="{ name: 'ShoppingCart' }"
+              >
                 <v-badge
                   color="#1DD3B0"
                   :content="$store.getters.cartBadge"

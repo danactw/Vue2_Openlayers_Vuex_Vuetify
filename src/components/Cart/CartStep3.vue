@@ -29,6 +29,11 @@
               hide-default-footer
               fixed-header
             >
+              <template v-slot:[`item.image`]="{ item }">
+                <div class="imgContainer" style="width: 50%; height: 0; padding-bottom: 50%; position: relative">
+                  <img :src="item.image" style="width: 100%; height: 100%; position: absolute; object-fit: cover">
+                </div>
+              </template>
               <template v-slot:[`item.formatStatus`]="{ item }">
                 <tr 
                   v-for="format in item.formatStatus"

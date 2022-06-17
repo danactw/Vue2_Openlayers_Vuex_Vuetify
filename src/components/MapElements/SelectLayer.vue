@@ -3,7 +3,7 @@
     top 
     offset-y 
     :nudge-top="10"
-    max-width="600"
+    max-width="500"
     max-height="600"
     :close-on-content-click="false"
     @click="$store.state.showInfo = false"
@@ -116,12 +116,6 @@ export default {
 </script>
 
 <style>
-/* #selectLayerBtn {
-  position: absolute;
-  bottom: 35px;
-  right: 10px;
-  z-index: 10;
-} */
 #selectLayer .v-input--selection-controls {
   margin-top: -10px;
 }

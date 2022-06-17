@@ -140,16 +140,17 @@ export default {
     addToCart () {
       this.$store.state.itemsInMiniCart.forEach(item => {
         // 檢查是否有itemsInMiniCart都沒有選輸出方式的item
-        if (item.formatStatus[0].checked === null && item.formatStatus[1].checked === null) {
+        // console.log(item);
+        // console.log(item.formatStatus[0].checked===null && item.formatStatus[1].checked===null);
+        if (item.formatStatus[0].checked===null && item.formatStatus[1].checked===null) {
           this.$store.state.itemsInMiniCart.splice(this.$store.state.itemsInMiniCart.indexOf(item),1)
         }
         // 檢查是否有已經在itemsInCart的item
-        let index = 0
         this.$store.state.itemsInCart.forEach(itemToBuy => {
+          let index = 0
+          if (Object.values(itemToBuy).indexOf(item.filename)!= -1) this.$store.state.itemsInCart.splice(index,1)
           index++
-          if (Object.values(itemToBuy).indexOf(item.filename)!= -1) return
         })
-        this.$store.state.itemsInCart.splice((index-1),1)
       })
       this.$store.state.itemsInCart.push(...this.$store.state.itemsInMiniCart)
       this.$store.state.itemsInMiniCart = []

@@ -95,7 +95,7 @@ export default {
 }
 
 #resultsTable .v-data-table__wrapper {
-  max-height: 500px;
+  max-height: calc(100vh - 380px);
   overflow: scroll;
 }
 </style>

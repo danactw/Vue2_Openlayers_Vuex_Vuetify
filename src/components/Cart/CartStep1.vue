@@ -104,6 +104,7 @@
               color="primary"
               class="mt-2"
               @click="$store.state.cartProgress = 2" 
+              :disabled="$store.state.itemsInCart.length===0"
             >
               [下一步] 填寫訂單資訊
             </v-btn>
