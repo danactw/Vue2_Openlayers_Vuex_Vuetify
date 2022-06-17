@@ -1,10 +1,12 @@
 <template>
   <v-expansion-panels id="searchNotification" v-model="$store.state.searchExpend">
     <v-expansion-panel>
-      <v-expansion-panel-header>
+      <v-expansion-panel-header v-show="$store.state.search">
         <p class="mb-0">
           共找到了 <span style="color:#C62828;">{{ $store.state.searchResults.length }}</span> 筆影像檔案<span v-if="open">，已選取 <span style="color:#C62828;">{{ $store.state.itemsInMiniCart.length }}</span> 筆。</span><br>
-          <span class="d-inline-block mt-1">@ {{ $store.state.clickedCoordinate }}</span>
+          <span class="d-inline-block mt-1">
+            @ {{ $store.state.clickedCoordinate }}
+          </span>
         </p>
       </v-expansion-panel-header>
       <v-expansion-panel-content>

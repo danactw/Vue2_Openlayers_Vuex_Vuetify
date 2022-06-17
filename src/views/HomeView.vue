@@ -5,7 +5,7 @@
     <div id="map" class="map" ref="mapContainer"></div>
     <div ref="mapInfoPopup" id="home">
       <mapInfoPopup v-show="$store.state.showInfo"/>
-      <map-menu-popup v-show="$store.state.showMenu"/>
+      <map-menu-popup v-show="$store.state.showMenu" @closeMenu="clearSearch" />
     </div>
     <v-snackbar 
       v-model="snackbar"
@@ -269,7 +269,6 @@ export default {
     },
     showInfo (e) {
       this.vector.getSource().clear()
-      this.$store.state.showInfo = true
       this.$store.state.showMenu = false
       this.map.addOverlay(this.mapInfoOverlay)
       this.mapInfoOverlay.setPosition(e.coordinate)
@@ -283,18 +282,15 @@ export default {
       this.$store.state.clickedPositionX = this.map.getSize()[0]/2
       this.$store.state.clickedPositionY = this.map.getSize()[1]/2
     },
-    clearClusterFeatures () {
+    getClusterFeatures () {
       this.cachesClusterFeatures = []
-      this.map.removeLayer(this.clusters)
-    },
-    showClusterFeatures () {
-      this.clearClusterFeatures()
       this.clusterFeatures.forEach(feature => {
         if (containsExtent(this.circleFeature.getGeometry().getExtent(), feature.getGeometry().getExtent())) {
           this.cachesClusterFeatures.push(feature)
-          this.addSearchResults(feature)
         }
       })
+    },
+    showClusterLayer () {
       this.addClusterStyle(this.cachesClusterFeatures)
       this.map.addLayer(this.clusters)
     },
@@ -312,10 +308,21 @@ export default {
       this.$store.state.searchResults.push(featureInfo)
     },
     clearSearch () {
-      this.$store.state.searchResults = []
-      this.clearClusterFeatures()
-      this.$store.state.searchExpend = []
+      // 清除search notification
       this.$store.state.search = false
+      this.$store.state.searchResults = []
+      this.$store.state.searchExpend = []
+      // 清除minicart
+      this.$store.state.itemsInMiniCart = []
+      // 清除cluster
+      this.cachesClusterFeatures = []
+      this.map.removeLayer(this.clusters)
+      // 清除範圍選取
+      this.vector.getSource().clear()
+      // 還原map menu 裡的設定
+      this.$store.state.showMenu = false
+      this.$store.state.homeMap.updateRadius = 2
+      this.$store.state.selectedImageType = []
     }
   },
   mounted() {
@@ -327,8 +334,9 @@ export default {
     })
     this.map.on('click', (e) => {
       this.$store.state.clickedCoordinate = e.coordinate
-      this.showInfo(e)
+      this.$store.state.showInfo = !this.$store.state.showInfo
       this.clearSearch()
+      if (this.$store.state.showInfo) this.showInfo(e)
     })
     this.map.on('pointermove', e => {
       this.mousePosition = toStringXY(toLonLat(e.coordinate),2)
@@ -338,7 +346,7 @@ export default {
     this.$store.watch(
       state => state.showMenu,
       (newValue,oldValue) => {
-        if (newValue===true) {
+        if (newValue) {
           this.map.getView().setCenter(this.$store.state.clickedCoordinate)
           this.showMenu()
         }
@@ -397,14 +405,13 @@ export default {
         }
         const center = this.circleFeature.getGeometry().getCenter()
         this.circleFeature.getGeometry().setRadius(this.radius*1000/getPointResolution('EPSG:3857', 1, center))
+        this.getClusterFeatures()
       }
     ),
     this.$store.watch(
       state => state.showMenu,
       (newValue, oldValue) => {
         if (!newValue) {
-          this.vector.getSource().clear()
-          this.$store.state.homeMap.updateRadius = 2
           this.snackbar = true
         }
       }
@@ -413,7 +420,8 @@ export default {
       state => state.search,
       (newValue, oldValue) => {
         if (newValue) {
-          this.showClusterFeatures()
+          this.showClusterLayer()
+          this.cachesClusterFeatures.forEach(feature => this.addSearchResults(feature))
           this.$store.state.showMenu = false
         }
       }

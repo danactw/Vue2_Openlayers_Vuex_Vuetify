@@ -58,7 +58,7 @@
           </v-slider>
         </v-list-item>
         <v-divider></v-divider>
-<v-list-item>
+      <v-list-item>
         <v-list-item-content>
           <v-list-item-title class="title mb-4">影像組合：</v-list-item-title>
           <v-container class="py-0">
@@ -66,14 +66,14 @@
               justify="start"
             >
               <v-col
-                v-for="(selection, i) in selections"
+                v-for="(selection, i) in $store.state.selectedImageType"
                 :key="selection.text"
                 class="shrink"
               >
                 <v-chip
                   :disabled="loading"
                   close
-                  @click:close="selected.splice(i, 1)"
+                  @click:close="$store.state.selectedImageType.splice(i, 1)"
                 >
                   <v-icon
                     left
@@ -106,10 +106,10 @@
 
       <template v-for="item in categories">
         <v-list-item
-          v-if="!selected.includes(item)"
+          v-if="!$store.state.selectedImageType.includes(item)"
           :key="item.text"
           :disabled="loading"
-          @click="selected.push(item)"
+          @click="$store.state.selectedImageType.push(item)"
         >
           <v-list-item-avatar>
             <v-icon
@@ -123,8 +123,13 @@
       </v-list>
       <v-card-actions class="mt-0 pt-0">
         <v-spacer></v-spacer>
-        <v-btn text @click="$store.state.showMenu=false">關閉</v-btn>
-        <v-btn :disabled="selected.length===0" color="primary" text @click="$store.state.search=true">找影像</v-btn>
+        <v-btn text @click="$emit('closeMenu')">關閉</v-btn>
+        <v-btn 
+          text 
+          color="primary" 
+          @click="searchImage"
+          :disabled="$store.state.selectedImageType.length===0" 
+        >找影像</v-btn>
       </v-card-actions>
     </v-card>
   </v-menu>
@@ -166,35 +171,27 @@ export default {
   },
   computed: {
     allSelected () {
-      return this.selected.length === this.items.length
+      return this.$store.state.selectedImageType.length === this.items.length
     },
     categories () {
       const search = this.search.toLowerCase()
-
       if (!search) return this.items
-
       return this.items.filter(item => {
         const text = item.text.toLowerCase()
-
         return text.indexOf(search) > -1
       })
-    },
-    selections () {
-      const selections = []
-
-      for (const selection of this.selected) {
-        selections.push(selection)
-      }
-
-      return selections
-    },
+    }
   },
-
-  watch: {
-    selected () {
-      this.search = ''
-    },
-  },
+  // watch: {
+  //   selected () {
+  //     this.search = ''
+  //   },
+  // },
+  methods: {
+    searchImage () {
+      this.$store.state.search = true
+    }
+  }
 }
 </script>
 

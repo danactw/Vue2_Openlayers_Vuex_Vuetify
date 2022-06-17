@@ -5,7 +5,8 @@
     :nudge-top="10"
     max-width="600"
     max-height="600"
-    :close-on-content-click="false" 
+    :close-on-content-click="false"
+    @click="$store.state.showInfo = false"
   >
     <template v-slot:activator="{ on, attrs }">
       <v-btn

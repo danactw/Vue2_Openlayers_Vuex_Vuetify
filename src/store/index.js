@@ -22,6 +22,7 @@ export default new Vuex.Store({
     clickedPositionX: 0,
     clickedPositionY: 0,
     showMenu: false,
+    selectedImageType: [],
     homeMap: {
       currentBaseLayer: 'OSM Standard',
       selectedOptionalLayers: [],
