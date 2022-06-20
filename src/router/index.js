@@ -6,7 +6,7 @@ Vue.use(VueRouter)
 
 const routes = [
   {
-    path: '/',
+    path: '/home',
     name: 'Home',
     component: HomeView
   },
@@ -33,7 +33,7 @@ const routes = [
   {
     path: '/userprofile',
     name: 'UserProfile',
-    component: () => import('../views/User/UserProfile.vue')
+    component: () => import('../views/User/UserProfileNew.vue')
   },
   {
     path: '/shoppingcart',

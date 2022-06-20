@@ -9,10 +9,8 @@
       :single-select="false"
       show-select
       class="elevation-1"
-      :items-per-page="5"
-      :page.sync="page"
+      :items-per-page="-1"
       hide-default-footer
-      @page-count="pageCount = $event"
     >
       <template v-slot:[`item.filename`]="{ item }">
         {{ item.filename }}
@@ -83,14 +81,6 @@
         </v-icon>
       </template>
     </v-data-table>
-    <div class="text-center pt-2 elevation-0">
-      <v-pagination
-        v-model="page"
-        :length="pageCount"
-        class="elevation-0"
-        color="secondary"
-      ></v-pagination>
-    </div>
     <v-card>
         <v-card class="ml-auto pa-2">
           <v-card-text class="pa-0">

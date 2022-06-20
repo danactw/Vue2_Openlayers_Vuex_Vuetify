@@ -140,8 +140,6 @@ export default {
     addToCart () {
       this.$store.state.itemsInMiniCart.forEach(item => {
         // 檢查是否有itemsInMiniCart都沒有選輸出方式的item
-        // console.log(item);
-        // console.log(item.formatStatus[0].checked===null && item.formatStatus[1].checked===null);
         if (item.formatStatus[0].checked===null && item.formatStatus[1].checked===null) {
           this.$store.state.itemsInMiniCart.splice(this.$store.state.itemsInMiniCart.indexOf(item),1)
         }

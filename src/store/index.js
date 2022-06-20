@@ -37,6 +37,17 @@ export default new Vuex.Store({
     itemsInCart:[],
     orderedInfo: {},
     freight: 0,
+    users: [
+      {
+        userName: '北極星Demo',
+        password: '11111111',
+        company: '北極星測繪科技有限公司',
+        address: '103台北市大同區民權里民權西路104號',
+        phone: '0912345678',
+        email: 'abc@rs-survey.com'
+      }
+    ],
+    orderRecords: []
   },
   getters: {
     getCartSubtotal (state) {

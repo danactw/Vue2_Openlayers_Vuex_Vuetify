@@ -103,8 +103,9 @@ export default {
       dropDowns: [
         { path: "UserAuth", title: "Sign up / Login in" },
         { path: "UserProfile", title: "User Profile" },
-        { path: "ShoppingCart", title: "Shopping Cart" },
-        { path: "OrderTracking", title: "Order Tracking" },
+        // { path: "ShoppingCart", title: "Shopping Cart" },
+        // { path: "OrderTracking", title: "Order Tracking" },
+        { path: "Home", title: "Log out" },
       ],
       user: {
         initials: "UN",

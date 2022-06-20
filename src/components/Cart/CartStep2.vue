@@ -352,8 +352,8 @@ export default {
     },
     submitForm () {
       let address = `${this.receiptInfo.city} ${this.receiptInfo.district} ${this.receiptInfo.street}`
-      let deliver = this.deliverConfig[Number(this.deliverID)-1].name
-      this.$store.state.orderedInfo = { ...this.orderInfo, deliver, recipient: this.receiptInfo.recipient, postalCode: this.receiptInfo.postalCode, address}
+      let delivery = this.deliverConfig[Number(this.deliverID)-1].name
+      this.$store.state.orderedInfo = { ...this.orderInfo, delivery, recipient: this.receiptInfo.recipient, postalCode: this.receiptInfo.postalCode, address}
     }
   },
   mounted() {

@@ -196,6 +196,7 @@
           color="primary"
           class="mt-2"
           :disabled="paymentMethod===''"
+          @click.prevent="submitOrder"
         >
           [確認無誤] 送出訂單
         </v-btn>
@@ -229,6 +230,21 @@ export default {
         return acc
       },0 )
     },
+    submitOrder () {
+      const newOrderInfo = {
+        orderNo: Math.floor(Math.random()*100000),
+        userName: '',
+        ...this.$store.state.orderedInfo,
+        images: [...this.$store.state.itemsInCart],
+        payment: this.paymentMethod,
+        date: new Date,
+        amount: this.$store.getters.getCartTotal,
+        status: 'pending'
+      }
+      this.$store.state.orderRecords.push(newOrderInfo)
+      this.$router.push({name: 'UserProfile'})
+      console.log(newOrderInfo);
+    }
   }
 }
 </script>
