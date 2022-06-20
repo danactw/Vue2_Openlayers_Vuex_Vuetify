@@ -49,14 +49,15 @@
             single-line
           ></v-text-field>
         </v-col>
-        <v-col cols="3">
+        <v-col cols="4">
           <v-radio-group v-model="copyTitle" :mandatory="false" row class="mt-1">
             <v-radio label="同訂購人" value="orderby"></v-radio>
+            <v-radio label="帶入會員資料" value="userInfo"></v-radio>
             <!-- <v-radio label="同收件人" value="recipient"></v-radio> -->
             <v-radio label="使用測試資料" value="demo"></v-radio>
           </v-radio-group>
         </v-col>
-        <v-col cols="3" class="d-flex justify-end">
+        <v-col cols="2" class="d-flex justify-end">
           <v-btn class="mr-2" @click="resetForm">清除資料</v-btn>
           <v-btn @click="validateForm">顯示必填欄位</v-btn>
         </v-col>
@@ -324,7 +325,12 @@ export default {
         Object.keys(this.demo).map(key => {
           this.orderInfo[key] = this.demo[key]
         })
-      } else if (val === 'orderby') this.orderInfo.recipe = this.orderInfo.orderby
+      } else if (val === 'userInfo') {
+        this.orderInfo.orderby = this.$store.state.users[0].userName
+        this.orderInfo.recipe = this.$store.state.users[0].company
+        this.orderInfo.mobile = this.$store.state.users[0].phone
+        this.orderInfo.email = this.$store.state.users[0].email
+      } else this.orderInfo.recipe = this.orderInfo.orderby
     },
     postalCode () {
       this.receiptInfo.postalCode = this.postalCode

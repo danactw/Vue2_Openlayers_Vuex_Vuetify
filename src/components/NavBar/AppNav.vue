@@ -3,7 +3,7 @@
     <v-container>
       <v-row>
         <v-col class="pl-0" cols="4">
-          <v-toolbar-title v-if="$route.path!=='/'">Openlayers</v-toolbar-title>
+          <v-toolbar-title v-if="$route.path!=='/home'">Openlayers</v-toolbar-title>
           <div class="d-flex" v-else >
             <v-app-bar-nav-icon @click="toggleNavDrawer" class="mr-4"></v-app-bar-nav-icon>
             <SearchLocation />

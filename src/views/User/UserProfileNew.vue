@@ -200,7 +200,7 @@ export default {
       tabs: null,
       editable: false,
       showPasswordOld: false,
-      showPasswordNew: true,
+      showPasswordNew: false,
       showPasswordConfirm: false,
       newPassword: '',
       headers: [
