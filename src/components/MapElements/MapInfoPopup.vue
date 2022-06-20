@@ -85,9 +85,9 @@
 <script>
 export default {
   data() {
-      return {
-          fab: true
-      };
+    return {
+        fab: true
+    };
   },
   methods: {
     toggleMenu() {

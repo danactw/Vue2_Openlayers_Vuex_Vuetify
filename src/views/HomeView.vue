@@ -206,7 +206,7 @@ export default {
       }
 
       this.map = new Map({
-        layers: [ baseLayerGroup, optionalLayerGroup, this.vector ],
+        layers: [ baseLayerGroup, optionalLayerGroup ],
         target: 'map',
         view: new View({
           center: [13471657.33321689, 2725618.3248579176],
@@ -291,6 +291,7 @@ export default {
       })
     },
     showClusterLayer () {
+      this.getClusterFeatures()
       this.addClusterStyle(this.cachesClusterFeatures)
       this.map.addLayer(this.clusters)
     },
@@ -344,11 +345,23 @@ export default {
   },
   created() {
     this.$store.watch(
+      state => state.showInfo,
+      (newValue,oldValue) => {
+        if (newValue) {
+          this.map.removeLayer(this.vector)
+          this.map.addLayer(this.vector)
+          this.vector.setVisible(true)
+        }
+      }
+    ),
+    this.$store.watch(
       state => state.showMenu,
       (newValue,oldValue) => {
         if (newValue) {
           this.map.getView().setCenter(this.$store.state.clickedCoordinate)
           this.showMenu()
+        } else {
+          this.snackbar = true
         }
       }
     ),
@@ -406,14 +419,6 @@ export default {
         const center = this.circleFeature.getGeometry().getCenter()
         this.circleFeature.getGeometry().setRadius(this.radius*1000/getPointResolution('EPSG:3857', 1, center))
         this.getClusterFeatures()
-      }
-    ),
-    this.$store.watch(
-      state => state.showMenu,
-      (newValue, oldValue) => {
-        if (!newValue) {
-          this.snackbar = true
-        }
       }
     ),
     this.$store.watch(

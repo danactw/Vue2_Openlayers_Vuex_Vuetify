@@ -16,7 +16,7 @@
         v-bind="attrs"
         v-on="on"
         rounded x-small height="40px"
-        data-intro="這是地圖縮放工具 [縮小]"
+        data-intro="這是塗層切換工具"
         data-step="1"
       >
         <v-icon>mdi-layers</v-icon>
